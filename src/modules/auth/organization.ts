@@ -1,5 +1,5 @@
-import config from '../config';
-import url from '../util/url';
+import config from '../config'
+import url from '../util/url'
 import fetch from 'node-fetch'
 
 export interface Organization {
@@ -17,12 +17,14 @@ export interface Organization {
   };
 }
 
-export function loadOrganizationList() {
-  fetch(url.AUTH_ORGANIZATION_LIST_URL,
+export async function loadOrganizationList() {
+  const resp = await fetch(url.AUTH_ORGANIZATION_LIST_URL,
     {
       method: 'GET',
-      headers: { Authorization: config.get('auth.token') }
-    }).then(res => {
-    console.log(res.body);
-  }).catch(err => console.error(err));
+      headers: {Authorization: config.get('auth.token')},
+    })
+
+  const orgList: Organization[] = resp.body?.data
+
+  return orgList
 }

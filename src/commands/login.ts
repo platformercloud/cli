@@ -1,5 +1,6 @@
-import {Command} from '@oclif/command';
+import { Command } from '@oclif/command';
 import { createServer } from 'http';
+import { fetchPermanentToken } from '../modules/auth/token';
 import config from '../modules/config';
 import cli from 'cli-ux';
 import * as chalk from 'chalk';
@@ -16,7 +17,7 @@ export default class Login extends Command {
     loginURL.searchParams.append('redirect_uri', `http://127.0.0.1:${port}`);
     loginURL.searchParams.append('response_type', 'code');
 
-    const server = createServer((req, res) => {
+    const server = createServer(async (req, res) => {
       const respondWithCORS = (statusCode: number) => {
         res.writeHead(statusCode, {
           'Access-Control-Allow-Origin': consoleURL,
@@ -30,8 +31,8 @@ export default class Login extends Command {
             'sec-fetch-site',
             'sec-fetch-mode',
             'sec-fetch-dest',
-            'sec-ch-ua-mobile',
-          ].join(','),
+            'sec-ch-ua-mobile'
+          ].join(',')
         });
         res.end();
       };
@@ -48,11 +49,14 @@ export default class Login extends Command {
         this.error(chalk.red('Failed to log in'), {
           exit: 1,
           suggestions: [
-            'If you are using Safari, please try again with Chrome or Firefox',
-          ],
+            'If you are using Safari, please try again with Chrome or Firefox'
+          ]
         });
       }
-      config.set(`contexts.${currentContext}.auth.token`, token);
+
+      const permanentToken = await fetchPermanentToken(token);
+
+      config.set(`contexts.${currentContext}.auth.token`, permanentToken);
       this.log(chalk.green('Successfully logged in!'));
       respondWithCORS(200);
 

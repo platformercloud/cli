@@ -25,7 +25,7 @@ org world from ./src/hello.ts!
     const {args, flags} = this.parse(Org)
 
     console.log('config', config.get('auth.token'))
-
+    console.log("context url : ", config.get("contexts.default.platformerAPIGateway"))
     loadOrganizationList();
 
     const name = flags.name ?? 'world'
