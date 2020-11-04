@@ -1,4 +1,6 @@
-const CONTEXT_URL = '';
+import config from '../config';
+
+const CONTEXT_URL = config.get('contexts.default.platformerAPIGateway');
 
 export default {
   AUTH_TOKEN_CREATE_URL: `${CONTEXT_URL}/auth/api/v1/serviceaccount/token/create`,

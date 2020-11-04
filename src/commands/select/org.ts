@@ -1,4 +1,5 @@
 import {Command, flags} from '@oclif/command'
+import { loadOrganizationList } from '../../modules/auth/organization';
 import config from '../../modules/config'
 
 export default class Org extends Command {
@@ -24,6 +25,8 @@ org world from ./src/hello.ts!
     const {args, flags} = this.parse(Org)
 
     console.log('config', config.get('auth.token'))
+
+    loadOrganizationList();
 
     const name = flags.name ?? 'world'
     this.log('org select')
