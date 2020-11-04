@@ -16,7 +16,6 @@ export async function fetchPermanentToken(token: string) {
   });
 
   const json = await resp.json();
-  console.log(json);
 
   if (!json.success) {
     console.log('Error');

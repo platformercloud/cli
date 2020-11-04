@@ -34,3 +34,8 @@ if (!Boolean(config.get('contexts'))) {
 }
 
 export default config;
+
+export function getToken() {
+  const currentContext: string = config.get('currentContext');
+  return config.get(`contexts.${currentContext}.auth.token`);
+}
