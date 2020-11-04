@@ -1,4 +1,4 @@
-import { Command } from '@oclif/command';
+import {Command} from '@oclif/command';
 import { createServer } from 'http';
 import config from '../modules/config';
 import cli from 'cli-ux';
@@ -21,7 +21,17 @@ export default class Login extends Command {
         res.writeHead(statusCode, {
           'Access-Control-Allow-Origin': consoleURL,
           'Access-Control-Allow-Methods': 'OPTIONS, GET',
-          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Allow-Headers': [
+            'x-token',
+            'content-type',
+            'origin',
+            'accept-encoding',
+            'accept-language',
+            'sec-fetch-site',
+            'sec-fetch-mode',
+            'sec-fetch-dest',
+            'sec-ch-ua-mobile',
+          ].join(','),
         });
         res.end();
       };

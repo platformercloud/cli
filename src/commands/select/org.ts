@@ -23,7 +23,7 @@ org world from ./src/hello.ts!
   async run() {
     const {args, flags} = this.parse(Org)
 
-    console.log('config', config.get('token'))
+    console.log('config', config.get('auth.token'))
 
     const name = flags.name ?? 'world'
     this.log('org select')
