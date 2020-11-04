@@ -40,15 +40,19 @@ export default class Login extends Command {
         return respondWithCORS(204);
       }
 
+      const currentContext: string = config.get('currentContext');
       const token = (req.headers['x-token'] as string)?.trim();
       if (!token) {
-        config.set({ auth: { token: '' } }); // Clear any existing token
+        config.set(`contexts.${currentContext}.auth.token`, null); // clear any existing token
         respondWithCORS(400);
         this.error(chalk.red('Failed to log in'), {
           exit: 1,
+          suggestions: [
+            'If you are using Safari, please try again with Chrome or Firefox',
+          ],
         });
       }
-      config.set({ auth: { token } });
+      config.set(`contexts.${currentContext}.auth.token`, token);
       this.log(chalk.green('Successfully logged in!'));
       respondWithCORS(200);
 

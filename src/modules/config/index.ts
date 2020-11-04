@@ -1,5 +1,37 @@
-import Conf from 'conf'
+import Conf from 'conf';
 
-const config = new Conf({})
+interface Config {
+  currentContext: string;
+  contexts: Record<
+    string,
+    {
+      platformerAPIGateway: string;
+      auth?: {
+        token?: string;
+      };
+      organization?: {
+        id: string;
+        name: string;
+      };
+      project?: {
+        id: string;
+        name: string;
+      };
+    }
+  >;
+}
 
-export default config
+const config = new Conf<Config>({});
+
+if (!Boolean(config.get('contexts'))) {
+  config.set({
+    currentContext: 'default',
+    contexts: {
+      default: {
+        platformerAPIGateway: 'https://beta.api.platformer.com',
+      },
+    },
+  });
+}
+
+export default config;
