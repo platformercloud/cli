@@ -16,50 +16,47 @@ Command Line Interface for the Platformer Console
 <!-- usage -->
 ```sh-session
 $ npm install -g pctl
-$ pctl COMMAND
+$ platformer COMMAND
 running command...
-$ pctl (-v|--version|version)
+$ platformer (-v|--version|version)
 pctl/0.0.0 win32-x64 node-v14.8.0
-$ pctl --help [COMMAND]
+$ platformer --help [COMMAND]
 USAGE
-  $ pctl COMMAND
+  $ platformer COMMAND
 ...
 ```
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`pctl hello [FILE]`](#pctl-hello-file)
-* [`pctl help [COMMAND]`](#pctl-help-command)
-* [`pctl login [FILE]`](#pctl-login-file)
-* [`pctl newcommand [FILE]`](#pctl-newcommand-file)
+* [`platformer connect [FILE]`](#platformer-connect-file)
+* [`platformer help [COMMAND]`](#platformer-help-command)
+* [`platformer login`](#platformer-login)
+* [`platformer newcommand [FILE]`](#platformer-newcommand-file)
+* [`platformer select:org [FILE]`](#platformer-selectorg-file)
 
-## `pctl hello [FILE]`
+## `platformer connect [FILE]`
 
 describe the command here
 
 ```
 USAGE
-  $ pctl hello [FILE]
+  $ platformer connect [FILE]
 
 OPTIONS
   -f, --force
   -h, --help       show CLI help
   -n, --name=name  name to print
-
-EXAMPLE
-  $ pctl hello
-  hello world from ./src/hello.ts!
 ```
 
-_See code: [src\commands\hello.ts](https://github.com/platformercloud/pctl/blob/v0.0.0/src\commands\hello.ts)_
+_See code: [src\commands\connect.ts](https://github.com/platformercloud/cli/blob/v0.0.0/src\commands\connect.ts)_
 
-## `pctl help [COMMAND]`
+## `platformer help [COMMAND]`
 
-display help for pctl
+display help for platformer
 
 ```
 USAGE
-  $ pctl help [COMMAND]
+  $ platformer help [COMMAND]
 
 ARGUMENTS
   COMMAND  command to show help for
@@ -70,13 +67,24 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0/src\commands\help.ts)_
 
-## `pctl login [FILE]`
+## `platformer login`
+
+Log in to the CLI with your Platformer Account
+
+```
+USAGE
+  $ platformer login
+```
+
+_See code: [src\commands\login.ts](https://github.com/platformercloud/cli/blob/v0.0.0/src\commands\login.ts)_
+
+## `platformer newcommand [FILE]`
 
 describe the command here
 
 ```
 USAGE
-  $ pctl login [FILE]
+  $ platformer newcommand [FILE]
 
 OPTIONS
   -f, --force
@@ -84,21 +92,25 @@ OPTIONS
   -n, --name=name  name to print
 ```
 
-_See code: [src\commands\login.ts](https://github.com/platformercloud/pctl/blob/v0.0.0/src\commands\login.ts)_
+_See code: [src\commands\newcommand.ts](https://github.com/platformercloud/cli/blob/v0.0.0/src\commands\newcommand.ts)_
 
-## `pctl newcommand [FILE]`
+## `platformer select:org [FILE]`
 
-describe the command here
+select org
 
 ```
 USAGE
-  $ pctl newcommand [FILE]
+  $ platformer select:org [FILE]
 
 OPTIONS
   -f, --force
   -h, --help       show CLI help
   -n, --name=name  name to print
+
+EXAMPLE
+  $ pctl org
+  org world from ./src/hello.ts!
 ```
 
-_See code: [src\commands\newcommand.ts](https://github.com/platformercloud/pctl/blob/v0.0.0/src\commands\newcommand.ts)_
+_See code: [src\commands\select\org.ts](https://github.com/platformercloud/cli/blob/v0.0.0/src\commands\select\org.ts)_
 <!-- commandsstop -->
