@@ -17,6 +17,7 @@ export default class Login extends Command {
     loginURL.searchParams.append('response_type', 'code');
 
     const server = createServer((req, res) => {
+      console.log(req.headers);
       const respondWithCORS = (statusCode: number) => {
         res.writeHead(statusCode, {
           'Access-Control-Allow-Origin': consoleURL,
@@ -36,6 +37,9 @@ export default class Login extends Command {
         respondWithCORS(400);
         this.error(chalk.red('Failed to log in'), {
           exit: 1,
+          suggestions: [
+            'If you are using Safari, please try again with Chrome or Firefox',
+          ],
         });
       }
       config.set({ auth: { token } });
