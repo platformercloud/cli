@@ -46,11 +46,11 @@ export default class ListContexts extends Command {
         extended: true,
       },
       'organization.name': {
-        header: 'Default Organization',
+        header: 'Organization',
         get: (row: Context) => row?.organization?.name || '-',
       },
       'project.name': {
-        header: 'Default Project',
+        header: 'Project',
         get: (row: Context) => row?.project?.name || '-',
       },
     };
