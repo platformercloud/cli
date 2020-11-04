@@ -2,5 +2,9 @@
   "extends": [
     "oclif",
     "oclif-typescript"
-  ]
+  ],
+  "rules": {
+    "quotes": ["error", "single"],
+    "no-extra-semi": "off"
+  }
 }
