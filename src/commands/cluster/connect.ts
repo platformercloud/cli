@@ -1,25 +1,81 @@
-import {Command, flags} from '@oclif/command'
+import { Command, flags } from '@oclif/command';
+import config from '../../modules/config';
+import {
+  kubectlIsInstalled,
+  listClustersInKubeconfig,
+} from '../../modules/mizzen/kubectl';
+import * as inquirer from 'inquirer';
+import cli from 'cli-ux';
 
-export default class Connect extends Command {
-  static description = 'describe the command here'
+export default class ClusterConnect extends Command {
+  static description = 'describe the command here';
 
   static flags = {
-    help: flags.help({char: 'h'}),
-    // flag with a value (-n, --name=VALUE)
-    name: flags.string({char: 'n', description: 'name to print'}),
-    // flag with no value (-f, --force)
-    force: flags.boolean({char: 'f'}),
-  }
-
-  static args = [{name: 'file'}]
+    organization: flags.string({
+      char: 'o',
+      description: 'Organization Name',
+      required: false,
+      multiple: false,
+      default: () => config.get('organization.name') as string,
+    }),
+    project: flags.string({
+      char: 'p',
+      description: 'Project Name',
+      required: false,
+      multiple: false,
+      default: () => config.get('project.name') as string,
+    }),
+    cluster: flags.string({
+      char: 'c',
+      description:
+        'Name of the Kubernetes Cluster to connect to the Platformer Console (must be a cluster name in your kubeconfig). If not provided, the CLI will enter an interactive mode to select a Cluster.',
+      required: false,
+      multiple: false,
+    }),
+  };
 
   async run() {
-    const {args, flags} = this.parse(Connect)
-
-    const name = flags.name ?? 'world'
-    this.log(`hello ${name} from D:\\Platformer\\Repositories\\cli\\src\\commands\\connect.ts`)
-    if (args.file && flags.force) {
-      this.log(`you input --force and --file: ${args.file}`)
+    const { flags } = this.parse(ClusterConnect);
+    if (!flags.organization) {
+      this.error('organization not set', {
+        exit: 1,
+        suggestions: [
+          'Pass the organization name with --organization',
+          'Set the organization with @TODO',
+        ],
+      });
     }
+    if (!flags.project) {
+      this.error('project not set', {
+        exit: 1,
+        suggestions: [
+          'Pass the project name with --project',
+          'Set the project with @TODO',
+        ],
+      });
+    }
+
+    if (!(await kubectlIsInstalled())) {
+      this.error('kubectl binary not found.', {
+        exit: 1,
+        suggestions: ['Install kubectl', 'Ensure kubectl is in your $PATH'],
+      });
+    }
+
+    const clusterList = await listClustersInKubeconfig();
+    if (flags.cluster) {
+    }
+
+    const { cluster } = await inquirer.prompt([
+      {
+        name: 'cluster',
+        message: 'Select a Cluster to connect to the Platformer Console',
+        type: 'list',
+        choices: clusterList,
+      },
+    ]);
+
+    console.log(cluster);
+    this.log('flags', flags);
   }
 }

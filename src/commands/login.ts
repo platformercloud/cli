@@ -34,7 +34,7 @@ export default class Login extends Command {
       if (!token) {
         config.set({ auth: { token: '' } }); // Clear any existing token
         respondWithCORS(400);
-        this.error(chalk.red('Error: Failed to log in'), {
+        this.error(chalk.red('Failed to log in'), {
           exit: 1,
         });
       }
