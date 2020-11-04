@@ -1,5 +1,5 @@
-import Conf from "conf";
+import Conf from 'conf'
 
-const config = new Conf({});
+const config = new Conf({})
 
-export default config;
+export default config
