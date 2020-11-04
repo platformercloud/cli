@@ -1,5 +1,6 @@
 import { promisify } from 'util';
 import { lookpath } from 'lookpath';
+
 const exec = promisify(require('child_process').exec);
 
 export async function kubectlIsInstalled() {
@@ -14,4 +15,11 @@ export async function listClustersInKubeconfig(): Promise<string[]> {
   return (stdout as string)
     .split('\n')
     .filter((s) => Boolean(s) && s !== 'NAME');
+}
+
+export async function installAgent(clusterName: string, yamlURL: string) {
+  const { stdout } = await exec(
+    `kubectl --cluster ${clusterName} apply -f ${yamlURL}`
+  );
+  return stdout;
 }
