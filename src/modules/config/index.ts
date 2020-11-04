@@ -1,24 +1,23 @@
 import Conf from 'conf';
 
-interface Config {
+export interface Config {
   currentContext: string;
-  contexts: Record<
-    string,
-    {
-      platformerAPIGateway: string;
-      auth?: {
-        token?: string;
-      };
-      organization?: {
-        id: string;
-        name: string;
-      };
-      project?: {
-        id: string;
-        name: string;
-      };
-    }
-  >;
+  contexts: Record<string, Context>;
+}
+
+export interface Context {
+  platformerAPIGateway: string;
+  auth?: {
+    token?: string;
+  };
+  organization?: {
+    id: string;
+    name: string;
+  };
+  project?: {
+    id: string;
+    name: string;
+  };
 }
 
 const config = new Conf<Config>({});
