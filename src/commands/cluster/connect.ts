@@ -1,13 +1,17 @@
 import { Command, flags } from '@oclif/command';
 import config from '../../modules/config';
 import {
+  installAgent,
   kubectlIsInstalled,
   listClustersInKubeconfig,
 } from '../../modules/mizzen/kubectl';
 import * as inquirer from 'inquirer';
-import { registerCluster } from '../../modules/mizzen/api';
+import {
+  generateAgentInstallationLink,
+  registerCluster,
+} from '../../modules/mizzen/api';
 import cli from 'cli-ux';
-import { CLIError } from '@oclif/errors';
+import chalk = require('chalk');
 
 export default class ClusterConnect extends Command {
   static description = 'describe the command here';
@@ -96,13 +100,25 @@ export default class ClusterConnect extends Command {
     }
 
     try {
-      const response = await registerCluster(
+      cli.action.start(
+        'Please wait',
+        'Registering your Cluster with Platformer'
+      );
+      const credentials = await registerCluster(
         flags.organization,
         flags.project,
         args.cluster
       );
-      console.log('res', response);
+      cli.action.start('Please wait', 'Installing the Platformer Agent');
+      const output = await installAgent(
+        args.cluster,
+        generateAgentInstallationLink(credentials)
+      );
+      cli.action.stop();
+      this.log(chalk.green(`Successfully connected "${args.cluster}"`));
+      this.debug(output);
     } catch (err) {
+      cli.action.stop();
       this.error('Failed to register the Cluster', {
         exit: 1,
         suggestions: [
@@ -112,7 +128,5 @@ export default class ClusterConnect extends Command {
         ref: 'https://docs.platformer.com/03-clusters/03-connecting-clusters/',
       });
     }
-
-    this.log('flags', flags);
   }
 }
