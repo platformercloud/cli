@@ -1,8 +1,10 @@
 import { Command } from "@oclif/command";
 import { createServer } from "http";
+import Conf from "conf";
 import cli from "cli-ux";
 
 const authURL = "http://beta.console.platformer.com";
+const config = new Conf();
 
 export default class Login extends Command {
   static description = "Log in to the CLI with your Platformer Account";
@@ -24,6 +26,9 @@ export default class Login extends Command {
         return res.end();
       }
       const token = (req.headers["x-token"] as string)?.trim();
+      if (token) {
+        config.set("token", token);
+      }
       res.writeHead(token ? 200 : 400, headers);
       res.end();
       server.emit("stop");
