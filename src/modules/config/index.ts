@@ -6,6 +6,9 @@ interface Config {
     string,
     {
       platformerAPIGateway: string;
+      auth?: {
+        token?: string;
+      };
       organization?: {
         id: string;
         name: string;

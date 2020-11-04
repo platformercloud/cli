@@ -10,14 +10,15 @@ export async function registerCluster(
   const url = `${config.get(
     `contexts.${context}.platformerAPIGateway`
   )}/mizzen/api/v1/cluster`;
-
+  const token: string = config.get(`contexts.${context}.auth.token`);
+  console.log(token);
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-organization-id': organization_id,
       'x-project-id': project_id,
-      Authorization: config.get('auth.token') as string,
+      Authorization: token,
     },
     body: JSON.stringify({
       cluster_name,
@@ -26,7 +27,7 @@ export async function registerCluster(
       whitelist_ips: [],
     }),
   });
-  
+
   const json = await response.json();
   if (response.status > 300) {
     throw new Error(json);
