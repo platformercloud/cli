@@ -27,15 +27,20 @@ if (!Boolean(config.get('contexts'))) {
     currentContext: 'default',
     contexts: {
       default: {
-        platformerAPIGateway: 'https://beta.api.platformer.com',
-      },
-    },
+        platformerAPIGateway: 'https://beta.api.platformer.com'
+      }
+    }
   });
 }
 
 export default config;
 
+const currentContext: string = config.get('currentContext');
+
 export function getToken() {
-  const currentContext: string = config.get('currentContext');
   return config.get(`contexts.${currentContext}.auth.token`);
+}
+
+export function getSavedOrganizationId() {
+  return config.get(`contexts.${currentContext}.organization.id`);
 }

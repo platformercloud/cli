@@ -4,7 +4,6 @@ import * as inquirer from 'inquirer';
 import {
   getOrganizationIdByName,
   getOrganizationNamesList,
-  loadOrganizationList
 } from '../../modules/auth/organization';
 import config from '../../modules/config';
 
@@ -45,8 +44,6 @@ org world from ./src/hello.ts!
       org = responses.organization;
     }
 
-    this.log(`Selected Value ${org}`);
-
     const selectedOrgId = getOrganizationIdByName(org);
 
     const currentContext: string = config.get('currentContext');
@@ -56,8 +53,8 @@ org world from ./src/hello.ts!
 
     // const name = flags.name ?? 'world'
     // this.log('org select')
-    // if (args.file && flags.force) {
-    //   this.log(`you input --force and --file: ${args.file}`);
-    // }
+    if (args.file && flags.force) {
+      this.log(`you input --force and --file: ${args.file}`);
+    }
   }
 }

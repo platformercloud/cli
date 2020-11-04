@@ -18,7 +18,7 @@ export interface Organization {
 }
 
 interface SelectOrgName {
-  name: string
+  name: string;
 }
 
 let orgList: Organization[];
