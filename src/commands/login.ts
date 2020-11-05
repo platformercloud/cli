@@ -22,17 +22,7 @@ export default class Login extends Command {
         res.writeHead(statusCode, {
           'Access-Control-Allow-Origin': consoleURL,
           'Access-Control-Allow-Methods': 'OPTIONS, GET',
-          'Access-Control-Allow-Headers': [
-            'x-token',
-            'content-type',
-            'origin',
-            'accept-encoding',
-            'accept-language',
-            'sec-fetch-site',
-            'sec-fetch-mode',
-            'sec-fetch-dest',
-            'sec-ch-ua-mobile'
-          ].join(',')
+          'Access-Control-Allow-Headers': '*',
         });
         res.end();
       };
@@ -49,17 +39,16 @@ export default class Login extends Command {
         this.error(chalk.red('Failed to log in'), {
           exit: 1,
           suggestions: [
-            'If you are using Safari, please try again with Chrome or Firefox'
-          ]
+            'If you are using Safari, please try again with Chrome or Firefox',
+          ],
         });
       }
 
       const permanentToken = await fetchPermanentToken(token);
-
       config.set(`contexts.${currentContext}.auth.token`, permanentToken);
       this.log(chalk.green('Successfully logged in!'));
-      respondWithCORS(200);
 
+      respondWithCORS(200);
       server.close();
       process.exit(0);
     }).listen(port);

@@ -14,7 +14,15 @@ import cli from 'cli-ux';
 import chalk = require('chalk');
 
 export default class ClusterConnect extends Command {
-  static description = 'describe the command here';
+  static description =
+    'Connect a Kubernetes Cluster (in your kubeconfig) to the Platformer Console';
+
+  static examples = [
+    '$ platormer connect:cluster',
+    '$ platormer connect:cluster <cluster-name as listed in your kubeconfig>',
+    '$ platormer connect:cluster -o=<organization> -p=<project> # override context defaults',
+    '',
+  ];
 
   static flags = {
     help: flags.help({ char: 'h' }),

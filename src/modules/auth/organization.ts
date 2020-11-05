@@ -1,4 +1,4 @@
-import { getToken } from '../config';
+import { getAuthToken } from '../config';
 import url from '../util/url';
 import fetch from 'node-fetch';
 
@@ -17,40 +17,15 @@ export interface Organization {
   };
 }
 
-interface SelectOrgName {
-  name: string;
-}
-
-let orgList: Organization[];
-
-export async function loadOrganizationList() {
-  const token: string = getToken() as string;
-
-  const resp = await fetch(url.AUTH_ORGANIZATION_LIST_URL,
-    {
-      method: 'GET',
-      headers: { Authorization: token }
-    });
-
-  const json = await resp.json();
-
-  orgList = json?.data;
-
-  return orgList;
-}
-
-export async function getOrganizationNamesList() {
-  const organizationsList: Organization[] = await loadOrganizationList();
-  const orgNameList: SelectOrgName[] = [];
-
-  organizationsList.forEach(o => {
-    orgNameList.push({ name: o?.name });
+export async function fetchOrganizations() {
+  const response = await fetch(url.AUTH_ORGANIZATION_LIST_URL, {
+    method: 'GET',
+    headers: { Authorization: getAuthToken() },
   });
-
-  return orgNameList;
-}
-
-export function getOrganizationIdByName(orgName:string) {
-  const org =  orgList.find(o => o.name === orgName)
-  return org?.id
+  const json = await response.json();
+  if (response.status > 300) {
+    throw new Error(json);
+  }
+  const orgs: Organization[] = json?.data ?? [];
+  return orgs;
 }
