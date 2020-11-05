@@ -12,9 +12,21 @@ import {
 } from '../../modules/mizzen/api';
 import cli from 'cli-ux';
 import chalk = require('chalk');
+import {
+  getDefaultOrganization,
+  getDefaultProject,
+} from '../../modules/config/helpers';
 
 export default class ClusterConnect extends Command {
-  static description = 'describe the command here';
+  static description =
+    'Connect a Kubernetes Cluster (in your kubeconfig) to the Platformer Console';
+
+  static examples = [
+    '$ platormer connect:cluster',
+    '$ platormer connect:cluster <cluster-name as listed in your kubeconfig>',
+    '$ platormer connect:cluster -o=<organization> -p=<project> # override context defaults',
+    '',
+  ];
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -23,14 +35,14 @@ export default class ClusterConnect extends Command {
       description: 'Organization Name',
       required: false,
       multiple: false,
-      default: () => config.get('organization.name') as string,
+      default: () => getDefaultOrganization()?.name,
     }),
     project: flags.string({
       char: 'p',
       description: 'Project Name',
       required: false,
       multiple: false,
-      default: () => config.get('project.name') as string,
+      default: () => getDefaultProject()?.name,
     }),
   };
 
@@ -51,7 +63,7 @@ export default class ClusterConnect extends Command {
         exit: 1,
         suggestions: [
           'Pass the organization name with --organization',
-          'Set the organization with @TODO',
+          'Set the default organization with select:organization',
         ],
       });
     }
@@ -60,7 +72,7 @@ export default class ClusterConnect extends Command {
         exit: 1,
         suggestions: [
           'Pass the project name with --project',
-          'Set the project with @TODO',
+          'Set the default project with platformer select:project',
         ],
       });
     }

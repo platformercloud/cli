@@ -1,5 +1,6 @@
 import { Command } from '@oclif/command';
 import { createServer } from 'http';
+import { fetchPermanentToken } from '../modules/auth/token';
 import config from '../modules/config';
 import cli from 'cli-ux';
 import * as chalk from 'chalk';
@@ -16,7 +17,7 @@ export default class Login extends Command {
     loginURL.searchParams.append('redirect_uri', `http://127.0.0.1:${port}`);
     loginURL.searchParams.append('response_type', 'code');
 
-    const server = createServer((req, res) => {
+    const server = createServer(async (req, res) => {
       const respondWithCORS = (statusCode: number) => {
         res.writeHead(statusCode, {
           'Access-Control-Allow-Origin': consoleURL,
@@ -42,10 +43,12 @@ export default class Login extends Command {
           ],
         });
       }
-      config.set(`contexts.${currentContext}.auth.token`, token);
-      this.log(chalk.green('Successfully logged in!'));
-      respondWithCORS(200);
 
+      const permanentToken = await fetchPermanentToken(token);
+      config.set(`contexts.${currentContext}.auth.token`, permanentToken);
+      this.log(chalk.green('Successfully logged in!'));
+
+      respondWithCORS(200);
       server.close();
       process.exit(0);
     }).listen(port);
