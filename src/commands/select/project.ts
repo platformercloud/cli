@@ -43,15 +43,15 @@ export default class SelectProject extends Command {
     try {
       // validate the default organization or the --organization override value.
       orgId = await validateAndGetOrganizationId(flags.organization);
-    } catch (err) {
-      return this.error(err);
+    } catch (error) {
+      return this.error(error);
     }
 
     const projectList = await fetchProjects(orgId);
     let project: Project | undefined;
     if (args.project) {
       project = projectList.find((p) => p.name === args.project);
-      if (!Boolean(project)) {
+      if (!project) {
         return this.error(
           `A Project with the provided name "${args.project}" does not exist (or you do not have access to it)`,
           { exit: 1 }

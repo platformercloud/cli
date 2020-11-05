@@ -22,8 +22,7 @@ export async function fetchProjects(orgId: string): Promise<Project[]> {
   if (response.status > 300) {
     throw new Error(JSON.stringify(json));
   }
-  const projects: Project[] = json?.data ?? [];
-  return projects;
+  return json?.data ?? [];
 }
 
 export async function validateAndGetProjectId(

@@ -1,6 +1,6 @@
 import { Command, flags } from '@oclif/command';
 import config, {
-  defaultPlatformerAPIGateway,
+  defaultPlatformerAPIGateway
 } from '../../modules/config';
 import cli from 'cli-ux';
 import chalk = require('chalk');
@@ -9,20 +9,20 @@ export default class AddContext extends Command {
   static description = 'Add a new context';
 
   static flags = {
-    help: flags.help({ char: 'h' }),
+    help: flags.help({ char: 'h' })
   };
 
   static args = [
     {
       name: 'name',
       required: true,
-      description: 'Context name (must be unique)',
-    },
+      description: 'Context name (must be unique)'
+    }
   ];
 
   async run() {
     const {
-      args: { name: context },
+      args: { name: context }
     } = this.parse(AddContext);
     const contexts = config.get('contexts');
     if (
@@ -31,7 +31,7 @@ export default class AddContext extends Command {
       )
     ) {
       return this.error(`A context with the name "${context}" already exists`, {
-        exit: 1,
+        exit: 1
       });
     }
 
@@ -44,7 +44,7 @@ export default class AddContext extends Command {
     );
     if (isDedicatedInstallation) {
       gatewayURL = await cli.prompt('Enter the Platformer API Gateway URL', {
-        type: 'normal',
+        type: 'normal'
       });
     }
     config.set(`contexts.${context}.platformerAPIGateway`, gatewayURL);
@@ -53,7 +53,7 @@ export default class AddContext extends Command {
       'Would you like to set this context as your default context? (y/n)'
     );
     if (setAsDefaultContext) {
-      config.set(`currentContext`, context);
+      config.set('currentContext', context);
       this.log('switched default context to', context);
     }
 

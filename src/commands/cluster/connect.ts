@@ -1,5 +1,4 @@
 import { Command, flags } from '@oclif/command';
-import config from '../../modules/config';
 import {
   installAgent,
   kubectlIsInstalled,
@@ -24,9 +23,9 @@ export default class ClusterConnect extends Command {
     'Connect a Kubernetes Cluster (in your kubeconfig) to the Platformer Console';
 
   static examples = [
-    '$ platormer connect:cluster',
-    '$ platormer connect:cluster <cluster-name as listed in your kubeconfig>',
-    '$ platormer connect:cluster -o=<organization> -p=<project> # override context defaults',
+    '$ platformer connect:cluster',
+    '$ platformer connect:cluster <cluster-name as listed in your kubeconfig>',
+    '$ platformer connect:cluster -o=<organization> -p=<project> # override context defaults',
   ];
 
   static flags = {
@@ -133,7 +132,7 @@ export default class ClusterConnect extends Command {
       cli.action.stop();
       this.log(chalk.green(`Successfully connected "${args.cluster}"`));
       this.debug(output);
-    } catch (err) {
+    } catch (error) {
       cli.action.stop();
       this.error('Failed to register the Cluster', {
         exit: 1,
