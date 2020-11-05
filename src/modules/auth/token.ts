@@ -18,7 +18,7 @@ export async function fetchPermanentToken(token: string): Promise<string> {
   });
 
   const json = await resp.json();
-  if (!json.success || !Boolean(json?.data?.token)) {
+  if (!json.success || !json?.data?.token) {
     throw new Error('Failed to get a service account token for the CLI');
   }
 
