@@ -1,17 +1,21 @@
 import config from '.';
-import { Organization } from '../auth/organization';
 
 export function getAuthToken(): string {
   const currentContext: string = config.get('currentContext');
   return config.get(`contexts.${currentContext}.auth.token`);
 }
 
-export function getDefaultOrganization(): Organization {
+export function getAPIGateway(): string {
+  const currentContext: string = config.get('currentContext');
+  return config.get(`contexts.${currentContext}.platformerAPIGateway`);
+}
+
+export function getDefaultOrganization(): { name: string; id: string } {
   const currentContext: string = config.get('currentContext');
   return config.get(`contexts.${currentContext}.organization`);
 }
 
-export function getAPIGateway(): string {
+export function getDefaultProject(): { name: string; id: string } {
   const currentContext: string = config.get('currentContext');
-  return config.get(`contexts.${currentContext}.platformerAPIGateway`);
+  return config.get(`contexts.${currentContext}.project`);
 }
