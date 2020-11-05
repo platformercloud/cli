@@ -53,3 +53,5 @@ export function generateAgentInstallationLink({
   )}/mizzen/generate/v1/agent/${encodedToken}`;
   return url;
 }
+
+export function listClusters(orgId: string, projectId: string) {}

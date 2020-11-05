@@ -1,5 +1,4 @@
 import { Command, flags } from '@oclif/command';
-import config from '../../modules/config';
 import {
   installAgent,
   kubectlIsInstalled,
