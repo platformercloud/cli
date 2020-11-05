@@ -25,3 +25,15 @@ export async function fetchProjects(orgId: string): Promise<Project[]> {
   const projects: Project[] = json?.data ?? [];
   return projects;
 }
+
+export async function validateAndGetProjectId(
+  orgId: string,
+  projectName: string
+): Promise<string> {
+  const projects = await fetchProjects(orgId);
+  const project = projects.find((o) => o.name === projectName);
+  if (!project) {
+    throw new Error(`Invalid project name "${projectName}"`);
+  }
+  return project.project_id;
+}

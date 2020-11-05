@@ -31,6 +31,9 @@ export async function registerCluster(
   });
 
   const json = await response.json();
+
+  console.log(json)
+
   if (response.status > 300) {
     throw new Error(json);
   }

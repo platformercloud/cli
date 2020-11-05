@@ -16,6 +16,8 @@ import {
   getDefaultOrganization,
   getDefaultProject,
 } from '../../modules/config/helpers';
+import { validateAndGetOrganizationId } from '../../modules/auth/organization';
+import { validateAndGetProjectId } from '../../modules/auth/project';
 
 export default class ClusterConnect extends Command {
   static description =
@@ -76,6 +78,9 @@ export default class ClusterConnect extends Command {
       });
     }
 
+    const orgId = await validateAndGetOrganizationId(flags.organization);
+    const projectId = await validateAndGetProjectId(orgId, flags.project);
+
     if (!(await kubectlIsInstalled())) {
       this.error('kubectl binary not found.', {
         exit: 1,
@@ -116,8 +121,8 @@ export default class ClusterConnect extends Command {
         'Registering your Cluster with Platformer'
       );
       const credentials = await registerCluster(
-        flags.organization,
-        flags.project,
+        orgId,
+        projectId,
         args.cluster
       );
       cli.action.start('Please wait', 'Installing the Platformer Agent');
