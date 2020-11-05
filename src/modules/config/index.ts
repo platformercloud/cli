@@ -34,13 +34,3 @@ if (!Boolean(config.get('contexts'))) {
 }
 
 export default config;
-
-export function getAuthToken(): string {
-  const currentContext: string = config.get('currentContext');
-  return config.get(`contexts.${currentContext}.auth.token`);
-}
-
-export function getSavedOrganizationId() {
-  const currentContext: string = config.get('currentContext');
-  return config.get(`contexts.${currentContext}.organization.id`);
-}

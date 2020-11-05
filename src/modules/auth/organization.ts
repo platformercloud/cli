@@ -1,20 +1,10 @@
-import { getAuthToken } from '../config';
 import url from '../util/url';
 import fetch from 'node-fetch';
+import { getAuthToken } from '../config/helpers';
 
 export interface Organization {
   organization_id: string;
   name: string;
-  user_name: string;
-  uid: string;
-  id: string;
-  user_email: string;
-  pending: boolean;
-  owner: string;
-  created_date: {
-    _seconds: number;
-    nano_seconds: number;
-  };
 }
 
 export async function fetchOrganizations() {
@@ -28,4 +18,15 @@ export async function fetchOrganizations() {
   }
   const orgs: Organization[] = json?.data ?? [];
   return orgs;
+}
+
+export async function validateAndGetOrganizationId(
+  orgName: string
+): Promise<string> {
+  const orgList = await fetchOrganizations();
+  const org = orgList.find((o) => o.name === orgName);
+  if (!org) {
+    throw new Error(`Invalid organization name "${orgName}"`);
+  }
+  return org.organization_id;
 }

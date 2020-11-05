@@ -61,7 +61,7 @@ export default class SelectOrganization extends Command {
 
     const currentContext: string = config.get('currentContext');
     config.set(`contexts.${currentContext}.organization`, {
-      id: selectedOrg!.id,
+      id: selectedOrg!.organization_id,
       name: selectedOrg!.name,
     });
 

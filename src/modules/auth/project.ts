@@ -1,51 +1,26 @@
 import fetch from 'node-fetch';
-import { getSavedOrganizationId, getToken } from '../config';
+import { getAuthToken } from '../config/helpers';
 import url from '../util/url';
 
 export interface Project {
-  projectId: string;
-  projectName: string;
-  roles: {
-    collection_id: string;
-    roles_id: string;
-  };
-  isProjectOwner: boolean;
-}
-
-interface SelectProjectName {
+  project_id: string;
   name: string;
+  description: string;
 }
 
-let projectList: Project[];
-
-export async function loadProjectList() {
-  const token: string = getToken() as string;
-  const orgId: string =  getSavedOrganizationId() as string
-  const resp = await fetch(`${url.AUTH_PROJECT_LIST_URL}/${orgId}`,
-    {
-      method: 'GET',
-      headers: { Authorization: token}
-    });
-
-  const json = await resp.json();
-  console.log(json)
-  projectList = json?.data;
-
-  return projectList;
-}
-
-export async function getProjectNamesList() {
-  const projList: Project[] = await loadProjectList()
-  const projectNamesList: SelectProjectName[] = [];
-
-  projList.forEach(p => {
-    projectNamesList.push({ name: p?.projectName });
+export async function fetchProjects(orgId: string): Promise<Project[]> {
+  const response = await fetch(`${url.AUTH_PROJECT_LIST_URL}/${orgId}`, {
+    method: 'GET',
+    headers: {
+      Authorization: getAuthToken(),
+      'Content-Type': 'application/json',
+      'x-organization-id': orgId,
+    },
   });
-
-  return projectNamesList;
-}
-
-export function getProjectIdByName(projectName: string) {
-  const project = projectList.find(p => p?.projectName === projectName);
-  return project?.projectId;
+  const json = await response.json();
+  if (response.status > 300) {
+    throw new Error(JSON.stringify(json));
+  }
+  const projects: Project[] = json?.data ?? [];
+  return projects;
 }
