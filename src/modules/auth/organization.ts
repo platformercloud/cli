@@ -1,6 +1,6 @@
-import url from '../util/url';
+import endpoints from '../util/api-endpoints';
 import fetch from 'node-fetch';
-import { getAuthToken } from '../config/helpers';
+import { getAPIGateway, getAuthToken } from '../config/helpers';
 
 export interface Organization {
   organization_id: string;
@@ -8,7 +8,8 @@ export interface Organization {
 }
 
 export async function fetchOrganizations() {
-  const response = await fetch(url.AUTH_ORGANIZATION_LIST_URL, {
+  const url = `${getAPIGateway()}/${endpoints.AUTH_ORGANIZATION_LIST_URL}`;
+  const response = await fetch(url, {
     method: 'GET',
     headers: { Authorization: getAuthToken() },
   });

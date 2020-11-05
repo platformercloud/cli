@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
-import { getAuthToken } from '../config/helpers';
-import url from '../util/url';
+import { getAPIGateway, getAuthToken } from '../config/helpers';
+import endpoints from '../util/api-endpoints';
 
 export interface Project {
   project_id: string;
@@ -9,7 +9,8 @@ export interface Project {
 }
 
 export async function fetchProjects(orgId: string): Promise<Project[]> {
-  const response = await fetch(`${url.AUTH_PROJECT_LIST_URL}/${orgId}`, {
+  const url = `${getAPIGateway()}/${endpoints.AUTH_PROJECT_LIST_URL}/${orgId}`;
+  const response = await fetch(url, {
     method: 'GET',
     headers: {
       Authorization: getAuthToken(),

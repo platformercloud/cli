@@ -1,5 +1,7 @@
 import fetch from 'node-fetch';
 import config from '../../modules/config';
+import { getAPIGateway, getAuthToken } from '../config/helpers';
+import endpoints from '../util/api-endpoints';
 
 export interface AgentCredentials {
   clientID: string;
@@ -11,19 +13,14 @@ export async function registerCluster(
   project_id: string,
   cluster_name: string
 ): Promise<AgentCredentials> {
-  const currentContext = config.get('currentContext');
-  const url = `${config.get(
-    `contexts.${currentContext}.platformerAPIGateway`
-  )}/mizzen/api/v1/cluster`;
-  const token: string = config.get(`contexts.${currentContext}.auth.token`);
-
+  const url = `${getAPIGateway()}/${endpoints.MIZZEN_CLUSTER_REGISTRATION_URL}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-organization-id': organization_id,
       'x-project-id': project_id,
-      Authorization: token,
+      Authorization: getAuthToken(),
     },
     body: JSON.stringify({
       cluster_name,

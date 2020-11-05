@@ -10,3 +10,8 @@ export function getDefaultOrganization(): Organization {
   const currentContext: string = config.get('currentContext');
   return config.get(`contexts.${currentContext}.organization`);
 }
+
+export function getAPIGateway(): string {
+  const currentContext: string = config.get('currentContext');
+  return config.get(`contexts.${currentContext}.platformerAPIGateway`);
+}

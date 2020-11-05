@@ -1,8 +1,10 @@
 import fetch from 'node-fetch';
-import url from '../util/url';
+import { getAPIGateway } from '../config/helpers';
+import endpoints from '../util/api-endpoints';
 
 export async function fetchPermanentToken(token: string): Promise<string> {
-  const resp = await fetch(url.AUTH_TOKEN_CREATE_URL, {
+  const url = `${getAPIGateway()}/${endpoints.AUTH_TOKEN_CREATE_URL}`;
+  const resp = await fetch(url, {
     method: 'POST',
     body: JSON.stringify({
       name: 'CLI service account',
