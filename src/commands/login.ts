@@ -50,6 +50,7 @@ export default class Login extends Command {
 
       respondWithCORS(200);
       server.close();
+      // eslint-disable-next-line unicorn/no-process-exit
       process.exit(0);
     }).listen(port);
 

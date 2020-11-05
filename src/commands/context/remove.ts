@@ -26,7 +26,7 @@ export default class RemoveContext extends Command {
       (name) => name.toLowerCase() === context.toLowerCase()
     );
 
-    if (!Boolean(contextExists)) {
+    if (!contextExists) {
       return this.error(`Invalid context name "${context}"`, { exit: 1 });
     }
 

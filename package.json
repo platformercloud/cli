@@ -1,10 +1,10 @@
 {
-  "name": "pctl",
+  "name": "platformer-cli",
   "description": "Command Line Interface for the Platformer Console",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "binura.g@platformer.com, chamod.p@platformer.com",
   "bin": {
-    "pctl": "./bin/run"
+    "platformer": "./bin/run"
   },
   "bugs": "https://github.com/platformercloud/cli/issues",
   "dependencies": {
