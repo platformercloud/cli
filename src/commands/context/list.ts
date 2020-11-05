@@ -6,6 +6,7 @@ export default class ListContexts extends Command {
   static description = 'Lists all configured contexts';
 
   static flags = {
+    help: flags.help({ char: 'h' }),
     columns: flags.string({
       exclusive: ['additional'],
       description: 'only show provided columns (comma-seperated)',

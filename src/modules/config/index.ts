@@ -1,5 +1,7 @@
 import Conf from 'conf';
 
+export const defaultPlatformerAPIGateway = 'https://beta.api.platformer.com';
+
 export interface Config {
   currentContext: string;
   contexts: Record<string, Context>;
@@ -27,7 +29,7 @@ if (!Boolean(config.get('contexts'))) {
     currentContext: 'default',
     contexts: {
       default: {
-        platformerAPIGateway: 'https://beta.api.platformer.com',
+        platformerAPIGateway: defaultPlatformerAPIGateway,
       },
     },
   });

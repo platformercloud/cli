@@ -25,7 +25,6 @@ export default class ClusterConnect extends Command {
     '$ platormer connect:cluster',
     '$ platormer connect:cluster <cluster-name as listed in your kubeconfig>',
     '$ platormer connect:cluster -o=<organization> -p=<project> # override context defaults',
-    '',
   ];
 
   static flags = {
