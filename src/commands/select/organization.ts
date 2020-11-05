@@ -8,7 +8,7 @@ import {
 import config from '../../modules/config';
 
 export default class SelectOrganization extends Command {
-  static aliases = ['select:organization', 'select:org'];
+  static aliases = ['select:organization', 'select:org', 'select:organisation'];
 
   static description =
     'Select a default Organization for your current context.';
