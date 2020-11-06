@@ -1,5 +1,6 @@
 import { Command as OCLIFCommand } from '@oclif/command';
 import APIError from './modules/errors/api-error';
+import ValidationError from './modules/errors/validation-error';
 
 export default abstract class Command extends OCLIFCommand {
   async catch(error: Error) {
@@ -16,7 +17,11 @@ export default abstract class Command extends OCLIFCommand {
             ],
           });
         }
-        return this.error(e.message, e.oclifErrorOptions);
+        return this.error(e.message, { exit: 1, ...e.oclifErrorOptions });
+      }
+      case ValidationError: {
+        const e = <ValidationError>error;
+        return this.error(e.message, { exit: 1, ...e.oclifErrorOptions });
       }
       default:
         return super.catch(error);

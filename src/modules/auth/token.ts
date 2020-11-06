@@ -4,7 +4,7 @@ import APIError from '../errors/api-error';
 import endpoints from '../util/api-endpoints';
 
 export async function fetchPermanentToken(token: string): Promise<string> {
-  const url = `${getAPIGateway()}/${endpoints.AUTH_TOKEN_CREATE_URL}`;
+  const url = `${getAPIGateway()}/${endpoints.AUTH_CREATE_TOKEN}`;
   const response = await fetch(url, {
     method: 'POST',
     body: JSON.stringify({

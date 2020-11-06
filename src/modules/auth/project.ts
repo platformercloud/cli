@@ -10,7 +10,7 @@ export interface Project {
 }
 
 export async function fetchProjects(orgId: string): Promise<Project[]> {
-  const url = `${getAPIGateway()}/${endpoints.AUTH_PROJECT_LIST_URL}/${orgId}`;
+  const url = `${getAPIGateway()}/${endpoints.AUTH_PROJECT_LIST}/${orgId}`;
   const response = await fetch(url, {
     method: 'GET',
     headers: {
@@ -36,4 +36,12 @@ export async function validateAndGetProjectId(
     throw new Error(`Invalid project name "${projectName}"`);
   }
   return project.project_id;
+}
+
+export async function getProjectIdByName(
+  orgId: string,
+  projectName: string
+): Promise<Project | undefined> {
+  const projects = await fetchProjects(orgId);
+  return projects.find((o) => o.name === projectName);
 }

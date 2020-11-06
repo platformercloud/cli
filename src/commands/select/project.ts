@@ -6,6 +6,7 @@ import { validateAndGetOrganizationId } from '../../modules/auth/organization';
 import { fetchProjects, Project } from '../../modules/auth/project';
 import config from '../../modules/config';
 import { getDefaultOrganization } from '../../modules/config/helpers';
+import { tryValidateFlags } from '../../modules/util/validations';
 
 export default class SelectProject extends Command {
   static aliases = ['select:project', 'select:proj'];
@@ -39,14 +40,12 @@ export default class SelectProject extends Command {
 
   async run() {
     const { flags, args } = this.parse(SelectProject);
-    let orgId: string;
-
-    try {
-      // validate the default organization or the --organization override value.
-      orgId = await validateAndGetOrganizationId(flags.organization);
-    } catch (error) {
-      return this.error(error);
-    }
+    const { orgId } = await tryValidateFlags({
+      organization: {
+        name: flags.organization,
+        required: true,
+      },
+    });
 
     const projectList = await fetchProjects(orgId);
     let project: Project | undefined;

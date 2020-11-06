@@ -25,7 +25,7 @@ export async function registerCluster(
   project_id: string,
   cluster_name: string
 ): Promise<AgentCredentials> {
-  const url = `${getAPIGateway()}/${endpoints.MIZZEN_CLUSTER_REGISTRATION_URL}`;
+  const url = `${getAPIGateway()}/${endpoints.MIZZEN_REGISTER_CLUSTER}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {

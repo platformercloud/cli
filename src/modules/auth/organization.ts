@@ -9,7 +9,7 @@ export interface Organization {
 }
 
 export async function fetchOrganizations(): Promise<Organization[]> {
-  const url = `${getAPIGateway()}/${endpoints.AUTH_ORGANIZATION_LIST_URL}`;
+  const url = `${getAPIGateway()}/${endpoints.AUTH_ORGANIZATION_LIST}`;
   const response = await fetch(url, {
     method: 'GET',
     headers: { Authorization: getAuthToken() },
@@ -30,4 +30,11 @@ export async function validateAndGetOrganizationId(
     throw new Error(`Invalid organization name "${orgName}"`);
   }
   return org.organization_id;
+}
+
+export async function getOrganizationIdByName(
+  orgName: string
+): Promise<Organization | undefined> {
+  const orgList = await fetchOrganizations();
+  return orgList.find((o) => o.name === orgName);
 }

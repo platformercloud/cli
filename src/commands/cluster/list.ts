@@ -1,14 +1,13 @@
 import { flags } from '@oclif/command';
-import { ConnectedCluster, listClusters } from '../../modules/mizzen/api';
+import { ConnectedCluster, listClusters } from '../../modules/cluster/api';
 import {
   getDefaultOrganization,
   getDefaultProject,
 } from '../../modules/config/helpers';
-import { validateAndGetOrganizationId } from '../../modules/auth/organization';
-import { validateAndGetProjectId } from '../../modules/auth/project';
 import Command from '../../base-command';
 import cli from 'cli-ux';
 import chalk = require('chalk');
+import { tryValidateFlags } from '../../modules/util/validations';
 
 export default class ClusterList extends Command {
   static description = 'Lists all connected Kubernetes Clusters in a Project';
@@ -54,27 +53,16 @@ export default class ClusterList extends Command {
 
   async run() {
     const { flags } = this.parse(ClusterList);
-    if (!flags.organization) {
-      this.error('organization not set', {
-        exit: 1,
-        suggestions: [
-          'Pass the organization name with --organization',
-          'Set the default organization with select:organization',
-        ],
-      });
-    }
-    if (!flags.project) {
-      this.error('project not set', {
-        exit: 1,
-        suggestions: [
-          'Pass the project name with --project',
-          'Set the default project with platformer select:project',
-        ],
-      });
-    }
-
-    const orgId = await validateAndGetOrganizationId(flags.organization);
-    const projectId = await validateAndGetProjectId(orgId, flags.project);
+    const { orgId, projectId } = await tryValidateFlags({
+      organization: {
+        name: flags.organization,
+        required: true,
+      },
+      project: {
+        name: flags.project,
+        required: true,
+      },
+    });
 
     const columns = {
       name: {
@@ -108,7 +96,7 @@ export default class ClusterList extends Command {
         extended: true,
       },
     };
-    const clusters = await listClusters(orgId, projectId);
+    const clusters = await listClusters(orgId, projectId!);
     cli.table(clusters, columns, flags);
   }
 }

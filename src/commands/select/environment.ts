@@ -2,14 +2,13 @@ import { flags } from '@oclif/command';
 import * as chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import Command from '../../base-command';
-import { validateAndGetOrganizationId } from '../../modules/auth/organization';
-import { validateAndGetProjectId } from '../../modules/auth/project';
-import { Environment, fetchEnvironments } from '../../modules/rudder/api';
+import { Environment, fetchEnvironments } from '../../modules/apps/environment';
 import config from '../../modules/config';
 import {
   getDefaultOrganization,
   getDefaultProject,
 } from '../../modules/config/helpers';
+import { tryValidateFlags } from '../../modules/util/validations';
 
 export default class SelectEnvironment extends Command {
   static aliases = ['select:environment', 'select:env'];
@@ -49,30 +48,18 @@ export default class SelectEnvironment extends Command {
 
   async run() {
     const { args, flags } = this.parse(SelectEnvironment);
+    const { orgId, projectId } = await tryValidateFlags({
+      organization: {
+        name: flags.organization,
+        required: true,
+      },
+      project: {
+        name: flags.project,
+        required: true,
+      },
+    });
 
-    if (!flags.organization) {
-      this.error('organization not set', {
-        exit: 1,
-        suggestions: [
-          'Pass the organization name with --organization',
-          'Set the default organization with select:organization',
-        ],
-      });
-    }
-    if (!flags.project) {
-      this.error('project not set', {
-        exit: 1,
-        suggestions: [
-          'Pass the project name with --project',
-          'Set the default project with platformer select:project',
-        ],
-      });
-    }
-
-    const orgId = await validateAndGetOrganizationId(flags.organization);
-    const projectId = await validateAndGetProjectId(orgId, flags.project);
-
-    const envList = await fetchEnvironments(orgId, projectId);
+    const envList = await fetchEnvironments(orgId, projectId!);
 
     let envName: string = args.environment;
     let env: Environment | undefined;

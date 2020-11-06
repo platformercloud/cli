@@ -3,21 +3,20 @@ import {
   installAgent,
   kubectlIsInstalled,
   listClustersInKubeconfig,
-} from '../../modules/mizzen/kubectl';
+} from '../../modules/cluster/kubectl';
 import * as inquirer from 'inquirer';
 import {
   generateAgentInstallationLink,
   registerCluster,
-} from '../../modules/mizzen/api';
+} from '../../modules/cluster/api';
 import cli from 'cli-ux';
 import chalk = require('chalk');
 import {
   getDefaultOrganization,
   getDefaultProject,
 } from '../../modules/config/helpers';
-import { validateAndGetOrganizationId } from '../../modules/auth/organization';
-import { validateAndGetProjectId } from '../../modules/auth/project';
 import Command from '../../base-command';
+import { tryValidateFlags } from '../../modules/util/validations';
 
 export default class ClusterConnect extends Command {
   static description =
@@ -58,28 +57,16 @@ export default class ClusterConnect extends Command {
 
   async run() {
     const { flags, args } = this.parse(ClusterConnect);
-
-    if (!flags.organization) {
-      this.error('organization not set', {
-        exit: 1,
-        suggestions: [
-          'Pass the organization name with --organization',
-          'Set the default organization with select:organization',
-        ],
-      });
-    }
-    if (!flags.project) {
-      this.error('project not set', {
-        exit: 1,
-        suggestions: [
-          'Pass the project name with --project',
-          'Set the default project with platformer select:project',
-        ],
-      });
-    }
-
-    const orgId = await validateAndGetOrganizationId(flags.organization);
-    const projectId = await validateAndGetProjectId(orgId, flags.project);
+    const { orgId, projectId } = await tryValidateFlags({
+      organization: {
+        name: flags.organization,
+        required: true,
+      },
+      project: {
+        name: flags.project,
+        required: true,
+      },
+    });
 
     if (!(await kubectlIsInstalled())) {
       this.error('kubectl binary not found.', {
@@ -120,7 +107,11 @@ export default class ClusterConnect extends Command {
         'Please wait',
         'Registering your Cluster with Platformer'
       );
-      const credentials = await registerCluster(orgId, projectId, args.cluster);
+      const credentials = await registerCluster(
+        orgId,
+        projectId!,
+        args.cluster
+      );
       cli.action.start('Please wait', 'Installing the Platformer Agent');
       const output = await installAgent(
         args.cluster,
