@@ -2,9 +2,8 @@ import { flags } from '@oclif/command';
 import * as chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import Command from '../../base-command';
-import { validateAndGetOrganizationId } from '../../modules/auth/organization';
-import { fetchProjects, Project } from '../../modules/auth/project';
 import config from '../../modules/config';
+import { fetchProjects, Project } from '../../modules/auth/project';
 import { getDefaultOrganization } from '../../modules/config/helpers';
 import { tryValidateCommonFlags } from '../../modules/util/validations';
 
@@ -76,11 +75,11 @@ export default class SelectProject extends Command {
     });
 
     this.log(
-      chalk.green('Successfully set'),
+      'Successfully set',
       chalk.blueBright(`"${project!.name}"`),
-      chalk.green('as the default Project in the'),
+      'as the default Project in the',
       chalk.blueBright(`"${currentContext}"`),
-      chalk.green('context')
+      'context'
     );
   }
 }

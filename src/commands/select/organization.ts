@@ -67,11 +67,11 @@ export default class SelectOrganization extends Command {
     });
 
     this.log(
-      chalk.green('Successfully set'),
+      'Successfully set',
       chalk.blueBright(`"${selectedOrgName}"`),
-      chalk.green('as the default Organization in the'),
+      'as the default Organization in the',
       chalk.blueBright(`"${currentContext}"`),
-      chalk.green('context')
+      'context'
     );
   }
 }

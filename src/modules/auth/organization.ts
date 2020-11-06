@@ -21,17 +21,6 @@ export async function fetchOrganizations(): Promise<Organization[]> {
   return json?.data ?? [];
 }
 
-export async function validateAndGetOrganizationId(
-  orgName: string
-): Promise<string> {
-  const orgList = await fetchOrganizations();
-  const org = orgList.find((o) => o.name === orgName);
-  if (!org) {
-    throw new Error(`Invalid organization name "${orgName}"`);
-  }
-  return org.organization_id;
-}
-
 export async function getOrganizationIdByName(
   orgName: string
 ): Promise<Organization | undefined> {

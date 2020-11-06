@@ -1,13 +1,13 @@
 import { flags } from '@oclif/command';
 import chalk = require('chalk');
 import Command from '../base-command';
-import config from '../modules/config';
 import {
   getDefaultEnvironment,
   getDefaultOrganization,
   getDefaultProject,
 } from '../modules/config/helpers';
-import { tryValidateCommonFlags } from '../modules/util/validations';
+import { validateManifestFile } from '../modules/gitops/fs';
+import { parseK8sManifestsFromFile } from '../modules/gitops/parser';
 
 export default class Apply extends Command {
   static description =
@@ -54,21 +54,18 @@ export default class Apply extends Command {
 
   async run() {
     const { flags, args } = this.parse(Apply);
-    const { orgId, projectId, envId } = await tryValidateCommonFlags({
-      organization: {
-        name: flags.organization,
-        required: true,
-      },
-      project: {
-        name: flags.project,
-        required: true,
-      },
-      environment: {
-        name: flags.environment,
-        required: true,
-      },
-    });
 
-    
+    try {
+      const { filepath, extension } = validateManifestFile(args.filepath);
+      const manifests = await parseK8sManifestsFromFile(filepath, extension);
+      if (!manifests.length) {
+        return this.error('No valid Kubernetes manifests found', { exit: 1 });
+      }
+      manifests.forEach((m) => {
+        this.log(`Applying ${m.kind} "${m.metadata?.name}"`);
+      });
+    } catch (err) {
+      return this.error(err.message, { exit: 1 });
+    }
   }
 }
