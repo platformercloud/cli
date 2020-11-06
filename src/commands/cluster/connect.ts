@@ -16,7 +16,7 @@ import {
   getDefaultProject,
 } from '../../modules/config/helpers';
 import Command from '../../base-command';
-import { tryValidateFlags } from '../../modules/util/validations';
+import { tryValidateCommonFlags } from '../../modules/util/validations';
 
 export default class ClusterConnect extends Command {
   static description =
@@ -57,7 +57,7 @@ export default class ClusterConnect extends Command {
 
   async run() {
     const { flags, args } = this.parse(ClusterConnect);
-    const { orgId, projectId } = await tryValidateFlags({
+    const { orgId, projectId } = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
         required: true,

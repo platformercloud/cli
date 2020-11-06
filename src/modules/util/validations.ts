@@ -3,7 +3,14 @@ import { getProjectIdByName } from '../auth/project';
 import ValidationError from '../errors/validation-error';
 import { getEnvironmentIdByName } from '../apps/environment';
 
-export async function tryValidateFlags(flags: {
+/**
+ * Validates common resource names (Organizations, Projects, Environments)
+ * against respective API listings and produces the resource IDs.
+ *
+ * Throws @see ValidationError if required flags are not found or if no matching IDs are
+ * found for the resource names.
+ */
+export async function tryValidateCommonFlags(flags: {
   organization: {
     name: string;
     required: boolean;

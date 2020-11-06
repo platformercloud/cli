@@ -7,7 +7,7 @@ import {
   getDefaultOrganization,
   getDefaultProject,
 } from '../modules/config/helpers';
-import { tryValidateFlags } from '../modules/util/validations';
+import { tryValidateCommonFlags } from '../modules/util/validations';
 
 export default class Apply extends Command {
   static description =
@@ -54,7 +54,7 @@ export default class Apply extends Command {
 
   async run() {
     const { flags, args } = this.parse(Apply);
-    const { orgId, projectId, envId } = await tryValidateFlags({
+    const { orgId, projectId, envId } = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
         required: true,
@@ -68,5 +68,7 @@ export default class Apply extends Command {
         required: true,
       },
     });
+
+    
   }
 }

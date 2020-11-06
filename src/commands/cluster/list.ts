@@ -7,7 +7,7 @@ import {
 import Command from '../../base-command';
 import cli from 'cli-ux';
 import chalk = require('chalk');
-import { tryValidateFlags } from '../../modules/util/validations';
+import { tryValidateCommonFlags } from '../../modules/util/validations';
 
 export default class ClusterList extends Command {
   static description = 'Lists all connected Kubernetes Clusters in a Project';
@@ -53,7 +53,7 @@ export default class ClusterList extends Command {
 
   async run() {
     const { flags } = this.parse(ClusterList);
-    const { orgId, projectId } = await tryValidateFlags({
+    const { orgId, projectId } = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
         required: true,

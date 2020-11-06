@@ -8,7 +8,7 @@ import {
   getDefaultOrganization,
   getDefaultProject,
 } from '../../modules/config/helpers';
-import { tryValidateFlags } from '../../modules/util/validations';
+import { tryValidateCommonFlags } from '../../modules/util/validations';
 
 export default class SelectEnvironment extends Command {
   static aliases = ['select:environment', 'select:env'];
@@ -48,7 +48,7 @@ export default class SelectEnvironment extends Command {
 
   async run() {
     const { args, flags } = this.parse(SelectEnvironment);
-    const { orgId, projectId } = await tryValidateFlags({
+    const { orgId, projectId } = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
         required: true,

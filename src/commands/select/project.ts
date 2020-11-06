@@ -6,7 +6,7 @@ import { validateAndGetOrganizationId } from '../../modules/auth/organization';
 import { fetchProjects, Project } from '../../modules/auth/project';
 import config from '../../modules/config';
 import { getDefaultOrganization } from '../../modules/config/helpers';
-import { tryValidateFlags } from '../../modules/util/validations';
+import { tryValidateCommonFlags } from '../../modules/util/validations';
 
 export default class SelectProject extends Command {
   static aliases = ['select:project', 'select:proj'];
@@ -40,7 +40,7 @@ export default class SelectProject extends Command {
 
   async run() {
     const { flags, args } = this.parse(SelectProject);
-    const { orgId } = await tryValidateFlags({
+    const { orgId } = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
         required: true,

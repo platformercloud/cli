@@ -1,8 +1,13 @@
 import { Command as OCLIFCommand } from '@oclif/command';
+import config from './modules/config';
 import APIError from './modules/errors/api-error';
 import ValidationError from './modules/errors/validation-error';
 
 export default abstract class Command extends OCLIFCommand {
+  async init() {
+    this.debug('Using config:', config.path);
+  }
+
   async catch(error: Error) {
     // Handle custom errors globally
     switch (error.constructor) {
