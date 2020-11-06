@@ -12,12 +12,21 @@ export default class Logout extends Command {
       char: 'A',
       description: 'Log out of all contexts',
       required: false,
+      exclusive: ['context'],
+    }),
+    context: flags.string({
+      required: false,
+      description:
+        'Name of a specific context to log out from (defaults to current context)',
+      default: config.get('currentContext'),
+      options: Object.keys(config.get('contexts')),
+      exclusive: ['all'],
     }),
   };
 
   async run() {
     const { flags } = this.parse(Logout);
-    
+
     if (flags.all) {
       const contexts = config.get('contexts');
       Object.keys(contexts).forEach((context) => {
@@ -26,7 +35,7 @@ export default class Logout extends Command {
       return;
     }
 
-    this.logoutFromContext(config.get(`currentContext`));
+    this.logoutFromContext(flags.context);
   }
 
   private logoutFromContext(context: string) {
