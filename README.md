@@ -11,6 +11,7 @@ Command Line Interface for the Platformer Console
 <!-- toc -->
 * [Usage](#usage)
 * [Commands](#commands)
+* [Command Topics](#command-topics)
 <!-- tocstop -->
 # Usage
 <!-- usage -->
@@ -19,7 +20,7 @@ $ npm install -g platformer-cli
 $ platformer COMMAND
 running command...
 $ platformer (-v|--version|version)
-platformer-cli/0.0.1 darwin-x64 node-v12.15.0
+platformer-cli/0.0.3 darwin-x64 node-v12.15.0
 $ platformer --help [COMMAND]
 USAGE
   $ platformer COMMAND
@@ -28,191 +29,14 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`platformer cluster:connect [CLUSTER]`](#platformer-clusterconnect-cluster)
-* [`platformer context:add NAME`](#platformer-contextadd-name)
-* [`platformer context:list`](#platformer-contextlist)
-* [`platformer context:remove NAME`](#platformer-contextremove-name)
-* [`platformer help [COMMAND]`](#platformer-help-command)
-* [`platformer login`](#platformer-login)
-* [`platformer select:context [NAME]`](#platformer-selectcontext-name)
-* [`platformer select:organization [ORGANIZATION]`](#platformer-selectorganization-organization)
-* [`platformer select:project [PROJECT]`](#platformer-selectproject-project)
+# Command Topics
 
-## `platformer cluster:connect [CLUSTER]`
+* [`platformer apply`](docs/apply.md) - Create resources in Platformer Console using a Kubernetes YAMLs
+* [`platformer cluster`](docs/cluster.md) - Connect a Kubernetes Cluster (in your kubeconfig) to the Platformer Console
+* [`platformer context`](docs/context.md) - Add a new context
+* [`platformer help`](docs/help.md) - display help for platformer
+* [`platformer login`](docs/login.md) - Log in to the CLI with your Platformer Account (logs into the current context)
+* [`platformer logout`](docs/logout.md) - Log out of the CLI (from the current context)
+* [`platformer select`](docs/select.md) - Select a context
 
-Connect a Kubernetes Cluster (in your kubeconfig) to the Platformer Console
-
-```
-USAGE
-  $ platformer cluster:connect [CLUSTER]
-
-ARGUMENTS
-  CLUSTER  (OPTIONAL) Name of the Kubernetes Cluster to connect to the Platformer Console (must be a cluster name in
-           your kubeconfig). If not provided, the CLI will enter an interactive mode to select a Cluster.
-
-OPTIONS
-  -h, --help                       show CLI help
-  -o, --organization=organization  Organization Name
-  -p, --project=project            Project Name
-
-EXAMPLES
-  $ platformer connect:cluster
-  $ platformer connect:cluster <cluster-name as listed in your kubeconfig>
-  $ platformer connect:cluster -o=<organization> -p=<project> # override context defaults
-```
-
-_See code: [src/commands/cluster/connect.ts](https://github.com/platformercloud/cli/blob/v0.0.1/src/commands/cluster/connect.ts)_
-
-## `platformer context:add NAME`
-
-Add a new context
-
-```
-USAGE
-  $ platformer context:add NAME
-
-ARGUMENTS
-  NAME  Context name (must be unique)
-
-OPTIONS
-  -h, --help  show CLI help
-```
-
-_See code: [src/commands/context/add.ts](https://github.com/platformercloud/cli/blob/v0.0.1/src/commands/context/add.ts)_
-
-## `platformer context:list`
-
-Lists all configured contexts
-
-```
-USAGE
-  $ platformer context:list
-
-OPTIONS
-  -h, --help         show CLI help
-  -x, --extended     show extra columns
-  --columns=columns  only show provided columns (comma-seperated)
-  --csv              output is csv format
-  --filter=filter    filter property by partial string matching, ex: name=default
-  --no-header        hide table header from output
-  --no-truncate      do not truncate output to fit screen
-```
-
-_See code: [src/commands/context/list.ts](https://github.com/platformercloud/cli/blob/v0.0.1/src/commands/context/list.ts)_
-
-## `platformer context:remove NAME`
-
-Remove a context
-
-```
-USAGE
-  $ platformer context:remove NAME
-
-ARGUMENTS
-  NAME  Context name to remove
-
-OPTIONS
-  -h, --help  show CLI help
-```
-
-_See code: [src/commands/context/remove.ts](https://github.com/platformercloud/cli/blob/v0.0.1/src/commands/context/remove.ts)_
-
-## `platformer help [COMMAND]`
-
-display help for platformer
-
-```
-USAGE
-  $ platformer help [COMMAND]
-
-ARGUMENTS
-  COMMAND  command to show help for
-
-OPTIONS
-  --all  see all commands in CLI
-```
-
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0/src/commands/help.ts)_
-
-## `platformer login`
-
-Log in to the CLI with your Platformer Account
-
-```
-USAGE
-  $ platformer login
-```
-
-_See code: [src/commands/login.ts](https://github.com/platformercloud/cli/blob/v0.0.1/src/commands/login.ts)_
-
-## `platformer select:context [NAME]`
-
-Select a context
-
-```
-USAGE
-  $ platformer select:context [NAME]
-
-ARGUMENTS
-  NAME  (OPTIONAL) Context name. If not provided, the CLI will prompt an interactive selection
-
-OPTIONS
-  -h, --help  show CLI help
-```
-
-_See code: [src/commands/select/context.ts](https://github.com/platformercloud/cli/blob/v0.0.1/src/commands/select/context.ts)_
-
-## `platformer select:organization [ORGANIZATION]`
-
-Select a default Organization for your current context.
-
-```
-USAGE
-  $ platformer select:organization [ORGANIZATION]
-
-ARGUMENTS
-  ORGANIZATION  (OPTIONAL) Name of the Organization to set in the current context. If not provided, the CLI will open an
-                interactive prompt to select an Organization.
-
-OPTIONS
-  -h, --help  show CLI help
-
-ALIASES
-  $ platformer select:organization
-  $ platformer select:org
-  $ platformer select:organisation
-
-EXAMPLES
-  $ platformer select:org # interactive select
-  $ platformer select:org <organization-name>
-```
-
-_See code: [src/commands/select/organization.ts](https://github.com/platformercloud/cli/blob/v0.0.1/src/commands/select/organization.ts)_
-
-## `platformer select:project [PROJECT]`
-
-Select a default Project for your current context. Requires an Organization to be set with select:org or using the --o flag
-
-```
-USAGE
-  $ platformer select:project [PROJECT]
-
-ARGUMENTS
-  PROJECT  (OPTIONAL) Name of the Project to set in the current context. If not provided, the CLI will open an
-           interactive prompt to select an Project.
-
-OPTIONS
-  -h, --help                       show CLI help
-  -o, --organization=organization  organization name
-
-ALIASES
-  $ platformer select:project
-  $ platformer select:proj
-
-EXAMPLES
-  $ platformer select:project # interactive select
-  $ platformer select:project <project-name>
-```
-
-_See code: [src/commands/select/project.ts](https://github.com/platformercloud/cli/blob/v0.0.1/src/commands/select/project.ts)_
 <!-- commandsstop -->
