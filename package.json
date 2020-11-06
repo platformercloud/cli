@@ -48,7 +48,7 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/platformercloud/pctl",
+  "homepage": "https://platformercloud.github.io/cli/",
   "keywords": [
     "oclif"
   ],
@@ -58,16 +58,7 @@
     "commands": "./lib/commands",
     "bin": "platformer",
     "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/command",
-      "@oclif/config",
-      "chalk",
-      "conf",
-      "inquirer",
-      "js-yaml",
-      "lookpath",
-      "node-fetch",
-      "tslib"
+      "@oclif/plugin-help"
     ]
   },
   "repository": "platformercloud/cli",
