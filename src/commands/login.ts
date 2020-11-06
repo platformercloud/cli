@@ -1,4 +1,4 @@
-import { Command } from '@oclif/command';
+import Command from '../base-command';
 import { createServer } from 'http';
 import { fetchPermanentToken } from '../modules/auth/token';
 import config from '../modules/config';

@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { getAPIGateway, getAuthToken } from '../config/helpers';
+import APIError from '../errors/api-error';
 import endpoints from '../util/api-endpoints';
 
 export interface Project {
@@ -18,10 +19,10 @@ export async function fetchProjects(orgId: string): Promise<Project[]> {
       'x-organization-id': orgId,
     },
   });
-  const json = await response.json();
-  if (response.status > 300) {
-    throw new Error(JSON.stringify(json));
+  if (!response.ok) {
+    throw new APIError('Failed to fetch project list', response);
   }
+  const json = await response.json();
   return json?.data ?? [];
 }
 

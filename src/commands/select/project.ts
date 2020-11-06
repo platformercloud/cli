@@ -1,6 +1,7 @@
-import { Command, flags } from '@oclif/command';
+import { flags } from '@oclif/command';
 import * as chalk from 'chalk';
 import * as inquirer from 'inquirer';
+import Command from '../../base-command';
 import { validateAndGetOrganizationId } from '../../modules/auth/organization';
 import { fetchProjects, Project } from '../../modules/auth/project';
 import config from '../../modules/config';

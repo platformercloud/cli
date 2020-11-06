@@ -1,6 +1,7 @@
-import { Command, flags } from '@oclif/command';
+import { flags } from '@oclif/command';
 import config, { Context } from '../../modules/config';
 import cli from 'cli-ux';
+import Command from '../../base-command';
 
 export default class ListContexts extends Command {
   static description = 'Lists all configured contexts';

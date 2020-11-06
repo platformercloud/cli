@@ -1,7 +1,8 @@
-import { Command, flags } from '@oclif/command';
+import { flags } from '@oclif/command';
 import config from '../../modules/config';
 import chalk = require('chalk');
 import inquirer = require('inquirer');
+import Command from '../../base-command';
 
 export default class SelectContext extends Command {
   static description = 'Select a context';

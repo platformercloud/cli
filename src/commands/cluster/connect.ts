@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { flags } from '@oclif/command';
 import {
   installAgent,
   kubectlIsInstalled,
@@ -17,6 +17,7 @@ import {
 } from '../../modules/config/helpers';
 import { validateAndGetOrganizationId } from '../../modules/auth/organization';
 import { validateAndGetProjectId } from '../../modules/auth/project';
+import Command from '../../base-command';
 
 export default class ClusterConnect extends Command {
   static description =
@@ -119,11 +120,7 @@ export default class ClusterConnect extends Command {
         'Please wait',
         'Registering your Cluster with Platformer'
       );
-      const credentials = await registerCluster(
-        orgId,
-        projectId,
-        args.cluster
-      );
+      const credentials = await registerCluster(orgId, projectId, args.cluster);
       cli.action.start('Please wait', 'Installing the Platformer Agent');
       const output = await installAgent(
         args.cluster,

@@ -1,9 +1,10 @@
-import { Command, flags } from '@oclif/command';
+import { flags } from '@oclif/command';
 import config, {
   defaultPlatformerAPIGateway
 } from '../../modules/config';
 import cli from 'cli-ux';
 import chalk = require('chalk');
+import Command from '../../base-command';
 
 export default class AddContext extends Command {
   static description = 'Add a new context';

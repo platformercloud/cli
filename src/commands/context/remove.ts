@@ -1,4 +1,5 @@
-import { Command, flags } from '@oclif/command';
+import { flags } from '@oclif/command';
+import Command from '../../base-command';
 import config from '../../modules/config';
 
 export default class RemoveContext extends Command {

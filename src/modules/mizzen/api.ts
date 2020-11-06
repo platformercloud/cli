@@ -1,11 +1,23 @@
 import fetch from 'node-fetch';
 import config from '../../modules/config';
 import { getAPIGateway, getAuthToken } from '../config/helpers';
+import APIError from '../errors/api-error';
 import endpoints from '../util/api-endpoints';
 
 export interface AgentCredentials {
   clientID: string;
   clientSecret: string;
+}
+
+export interface ConnectedCluster {
+  id: string;
+  name: string;
+  isActive: boolean;
+  lastConnected: string;
+  lastDisconnected: string;
+  createdOn: string;
+  upgradeInProgress?: boolean;
+  upgradeAvailable?: string;
 }
 
 export async function registerCluster(
@@ -29,14 +41,14 @@ export async function registerCluster(
       whitelist_ips: [],
     }),
   });
-
-  const json = await response.json();
-  if (response.status > 300) {
-    throw new Error(json);
+  if (!response.ok) {
+    throw new APIError('Failed to register (connect) new cluster', response);
   }
+
+  const { clientID, clientSecret } = await response.json();
   return {
-    clientID: json.clientID,
-    clientSecret: json.clientSecret,
+    clientID,
+    clientSecret,
   };
 }
 
@@ -54,4 +66,24 @@ export function generateAgentInstallationLink({
   return url;
 }
 
-export function listClusters(orgId: string, projectId: string) {}
+export async function listClusters(
+  orgId: string,
+  projectId: string
+): Promise<ConnectedCluster[]> {
+  const url = new URL(`${getAPIGateway()}/${endpoints.MIZZEN_LIST_CLUSTERS}`);
+  url.searchParams.append('project_id', projectId);
+  url.searchParams.append('organization_id', orgId);
+
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-organization-id': orgId,
+      'x-project-id': projectId,
+      Authorization: getAuthToken(),
+    },
+  });
+  if (!response.ok) {
+    throw new APIError('Failed to fetch connected cluster list', response);
+  }
+  return await response.json();
+}

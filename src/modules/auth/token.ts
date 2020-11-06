@@ -1,10 +1,11 @@
 import fetch from 'node-fetch';
 import { getAPIGateway } from '../config/helpers';
+import APIError from '../errors/api-error';
 import endpoints from '../util/api-endpoints';
 
 export async function fetchPermanentToken(token: string): Promise<string> {
   const url = `${getAPIGateway()}/${endpoints.AUTH_TOKEN_CREATE_URL}`;
-  const resp = await fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     body: JSON.stringify({
       name: 'CLI service account',
@@ -17,9 +18,12 @@ export async function fetchPermanentToken(token: string): Promise<string> {
     },
   });
 
-  const json = await resp.json();
-  if (!json.success || !json?.data?.token) {
-    throw new Error('Failed to get a service account token for the CLI');
+  const json = await response.json();
+  if (!response.ok || !Boolean(json?.data?.token)) {
+    throw new APIError(
+      'Failed to fetch a service account token for the CLI',
+      response
+    );
   }
 
   return json.data.token;
