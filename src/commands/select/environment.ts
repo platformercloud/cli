@@ -22,14 +22,14 @@ export default class SelectEnvironment extends Command {
   static flags = {
     help: flags.help({ char: 'h' }),
     organization: flags.string({
-      char: 'o',
+      char: 'O',
       description: 'Organization Name',
       required: false,
       multiple: false,
       default: () => getDefaultOrganization()?.name,
     }),
     project: flags.string({
-      char: 'p',
+      char: 'P',
       description: 'Project Name',
       required: false,
       multiple: false,

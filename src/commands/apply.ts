@@ -3,9 +3,11 @@ import chalk = require('chalk');
 import Command from '../base-command';
 import config from '../modules/config';
 import {
+  getDefaultEnvironment,
   getDefaultOrganization,
   getDefaultProject,
 } from '../modules/config/helpers';
+import { tryValidateFlags } from '../modules/util/validations';
 
 export default class Apply extends Command {
   static description =
@@ -20,18 +22,25 @@ export default class Apply extends Command {
       exclusive: ['context'],
     }),
     organization: flags.string({
-      char: 'o',
+      char: 'O',
       description: 'Organization Name',
       required: false,
       multiple: false,
       default: () => getDefaultOrganization()?.name,
     }),
     project: flags.string({
-      char: 'p',
+      char: 'P',
       description: 'Project Name',
       required: false,
       multiple: false,
       default: () => getDefaultProject()?.name,
+    }),
+    environment: flags.string({
+      char: 'E',
+      description: 'Environment Name',
+      required: false,
+      multiple: false,
+      default: () => getDefaultEnvironment()?.name,
     }),
   };
 
@@ -45,8 +54,19 @@ export default class Apply extends Command {
 
   async run() {
     const { flags, args } = this.parse(Apply);
-
-    
-
+    const { orgId, projectId, envId } = await tryValidateFlags({
+      organization: {
+        name: flags.organization,
+        required: true,
+      },
+      project: {
+        name: flags.project,
+        required: true,
+      },
+      environment: {
+        name: flags.environment,
+        required: true,
+      },
+    });
   }
 }

@@ -22,7 +22,7 @@ export default class SelectProject extends Command {
   static flags = {
     help: flags.help({ char: 'h' }),
     organization: flags.string({
-      char: 'o',
+      char: 'O',
       description: 'organization name',
       required: false,
       default: () => getDefaultOrganization()?.name,

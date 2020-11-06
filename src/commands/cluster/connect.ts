@@ -25,20 +25,20 @@ export default class ClusterConnect extends Command {
   static examples = [
     '$ platformer connect:cluster',
     '$ platformer connect:cluster <cluster-name as listed in your kubeconfig>',
-    '$ platformer connect:cluster -o=<organization> -p=<project> # override context defaults',
+    '$ platformer connect:cluster --organization <organization> --project <project> # override context defaults',
   ];
 
   static flags = {
     help: flags.help({ char: 'h' }),
     organization: flags.string({
-      char: 'o',
+      char: 'O',
       description: 'Organization Name',
       required: false,
       multiple: false,
       default: () => getDefaultOrganization()?.name,
     }),
     project: flags.string({
-      char: 'p',
+      char: 'P',
       description: 'Project Name',
       required: false,
       multiple: false,

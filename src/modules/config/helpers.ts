@@ -19,3 +19,8 @@ export function getDefaultProject(): { name: string; id: string } {
   const currentContext: string = config.get('currentContext');
   return config.get(`contexts.${currentContext}.project`);
 }
+
+export function getDefaultEnvironment(): { name: string } {
+  const currentContext: string = config.get('currentContext');
+  return config.get(`contexts.${currentContext}.environment`);
+}
