@@ -9,7 +9,7 @@ const consoleURL = 'https://beta.console.platformer.com';
 const port = 9999;
 
 export default class Login extends Command {
-  static description = 'Log in to the CLI with your Platformer Account';
+  static description = 'Log in to the CLI with your Platformer Account (logs into the current context)';
 
   async run() {
     const loginURL = new URL(`${consoleURL}/cli-login`);
