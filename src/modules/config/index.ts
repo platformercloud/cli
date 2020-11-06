@@ -20,6 +20,9 @@ export interface Context {
     id: string;
     name: string;
   };
+  environment?: {
+    name: string;
+  };
 }
 
 const config = new Conf<Config>({});

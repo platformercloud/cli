@@ -6,4 +6,5 @@ export default {
   MIZZEN_CLUSTER_REGISTRATION_URL: 'mizzen/api/v1/cluster',
   MIZZEN_YAML_GENERATION_URL: 'mizzen/generate/v1/agent/',
   MIZZEN_LIST_CLUSTERS: 'mizzen/api/v1/cluster',
+  RUDDER_ENV_LIST: 'rudder/api/v1/environment',
 };

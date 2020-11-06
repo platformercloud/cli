@@ -74,7 +74,7 @@ export async function listClusters(
   url.searchParams.append('project_id', projectId);
   url.searchParams.append('organization_id', orgId);
 
-  const response = await fetch(url, {
+  const response = await fetch(url.href, {
     headers: {
       'Content-Type': 'application/json',
       'x-organization-id': orgId,
