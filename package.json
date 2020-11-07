@@ -60,7 +60,18 @@
     "bin": "platformer",
     "plugins": [
       "@oclif/plugin-help"
-    ]
+    ],
+    "topics": {
+      "cluster": {
+        "description": "Manage and connect Kubernetes Clusters to the Platformer Console"
+      },
+      "context": {
+        "description": "Manage Platformer CLI contexts"
+      },
+      "select": {
+        "description": "Select and set the Organization, Project and Environment in your context"
+      }
+    }
   },
   "repository": "platformercloud/cli",
   "scripts": {
