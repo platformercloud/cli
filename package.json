@@ -12,6 +12,7 @@
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "chalk": "^4.1.0",
+    "cli-ux": "^5.5.0",
     "conf": "^7.1.2",
     "inquirer": "^7.3.3",
     "js-yaml": "^3.14.0",
