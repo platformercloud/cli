@@ -56,8 +56,8 @@ ARGUMENTS
 OPTIONS
   -A, --all                        Log out of all contexts
   -E, --environment=environment    Environment Name
-  -O, --organization=organization  Organization Name
-  -P, --project=project            Project Name
+  -O, --organization=organization  [default: Fantastic 4] Organization Name
+  -P, --project=project            [default: ABC Institute] Project Name
   -h, --help                       show CLI help
 ```
 
@@ -76,8 +76,8 @@ ARGUMENTS
            your kubeconfig). If not provided, the CLI will enter an interactive mode to select a Cluster.
 
 OPTIONS
-  -O, --organization=organization  Organization Name
-  -P, --project=project            Project Name
+  -O, --organization=organization  [default: Fantastic 4] Organization Name
+  -P, --project=project            [default: ABC Institute] Project Name
   -h, --help                       show CLI help
 
 EXAMPLES
@@ -97,8 +97,8 @@ USAGE
   $ platformer cluster:list
 
 OPTIONS
-  -O, --organization=organization  Organization Name
-  -P, --project=project            Project Name
+  -O, --organization=organization  [default: Fantastic 4] Organization Name
+  -P, --project=project            [default: ABC Institute] Project Name
   -h, --help                       show CLI help
   -x, --extended                   show extra columns
   --columns=columns                only show provided columns (comma-seperated)
@@ -238,8 +238,8 @@ ARGUMENTS
                interactive prompt to select an Environment.
 
 OPTIONS
-  -O, --organization=organization  Organization Name
-  -P, --project=project            Project Name
+  -O, --organization=organization  [default: Fantastic 4] Organization Name
+  -P, --project=project            [default: ABC Institute] Project Name
   -h, --help                       show CLI help
 
 ALIASES
@@ -293,7 +293,7 @@ ARGUMENTS
            interactive prompt to select an Project.
 
 OPTIONS
-  -O, --organization=organization  organization name
+  -O, --organization=organization  [default: Fantastic 4] organization name
   -h, --help                       show CLI help
 
 ALIASES
