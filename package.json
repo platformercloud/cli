@@ -1,7 +1,7 @@
 {
   "name": "platformer-cli",
   "description": "Command Line Interface for the Platformer Console",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "author": "binura.g@platformer.com, chamod.p@platformer.com",
   "bin": {
     "platformer": "./bin/run"
@@ -12,6 +12,7 @@
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "chalk": "^4.1.0",
+    "cli-ux": "^5.5.0",
     "conf": "^7.1.2",
     "inquirer": "^7.3.3",
     "js-yaml": "^3.14.0",
@@ -59,7 +60,18 @@
     "bin": "platformer",
     "plugins": [
       "@oclif/plugin-help"
-    ]
+    ],
+    "topics": {
+      "cluster": {
+        "description": "Manage and connect Kubernetes Clusters to the Platformer Console"
+      },
+      "context": {
+        "description": "Manage Platformer CLI contexts"
+      },
+      "select": {
+        "description": "Select and set the Organization, Project and Environment in your context"
+      }
+    }
   },
   "repository": "platformercloud/cli",
   "scripts": {
