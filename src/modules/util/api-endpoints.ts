@@ -8,4 +8,4 @@ export default {
   MIZZEN_LIST_CLUSTERS: 'mizzen/api/v1/cluster',
   RUDDER_ENV_LIST: 'rudder/api/v1/environment',
   RUDDER_MAINFEST_IMPORT: 'rudder/api/v1/import/manifest',
-};
+} as const;
