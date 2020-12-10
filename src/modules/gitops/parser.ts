@@ -5,12 +5,20 @@ import YAML = require('js-yaml');
 export interface K8sObject {
   apiVersion: string;
   kind: string;
+  metadata: {
+    name: string;
+    [key: string]: any;
+  };
   [key: string]: any;
 }
 
 /** Bare minimum validation for k8s objects (checks for apiVersion and kind) */
 export function isValidK8sObject(obj: Object) {
-  return obj.hasOwnProperty('apiVersion') && obj.hasOwnProperty('kind');
+  return (
+    obj.hasOwnProperty('apiVersion') &&
+    obj.hasOwnProperty('kind') &&
+    obj.hasOwnProperty('metadata')
+  );
 }
 
 export async function parseK8sManifestsFromFile(
