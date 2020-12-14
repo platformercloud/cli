@@ -9,7 +9,7 @@ export async function applyManifest(
   projectId: string,
   envId: string,
   manifest: K8sObject
-) {
+): Promise<unknown> {
   // const url = `${getAPIGateway()}/${endpoints.RUDDER_MAINFEST_IMPORT}`;
   const url = `http://localhost:3000/api/v1/import/manifest`;
   const reqBody = {
@@ -32,5 +32,9 @@ export async function applyManifest(
   if (!response.ok) {
     throw new APIError('Failed to apply kubernetes manifest', response);
   }
-  return (await response.json())?.data ?? [];
+  try {
+    return (await response.json())?.data;
+  } catch (error) {
+    return null;
+  }
 }

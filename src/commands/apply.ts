@@ -1,14 +1,16 @@
 import { flags } from '@oclif/command';
+import * as chalk from 'chalk';
 import { Listr } from 'listr2';
+import { from, of } from 'rxjs';
+import { catchError, filter, mergeMap, shareReplay } from 'rxjs/operators';
 import Command from '../base-command';
 import {
   getDefaultEnvironment,
   getDefaultOrganization,
   getDefaultProject,
 } from '../modules/config/helpers';
-import { applyManifest } from '../modules/gitops/api';
-import { FileInfo, validateManifestPath } from '../modules/gitops/fs';
-import { parseK8sManifestsFromFile } from '../modules/gitops/parser';
+import { createOutputPath, validateManifestPath } from '../modules/gitops/fs';
+import { ManifestFile } from '../modules/gitops/manifest-file';
 import { writeHAR } from '../modules/util/fetch';
 import { tryValidateCommonFlags } from '../modules/util/validations';
 
@@ -74,7 +76,30 @@ export default class Apply extends Command {
     const ctx = context as Required<typeof context>;
     try {
       const { files, isDir } = await validateManifestPath(args.filepath);
-      await applyFiles(files, { ...ctx, isDir }).run();
+      await createOutputPath(ctx.envId);
+      const manifestFileArr = files.map((file) => new ManifestFile(file));
+      const taskPromise = applyFiles(manifestFileArr, { ...ctx, isDir }).run();
+      const parsedFiles = from(manifestFileArr).pipe(
+        mergeMap((f) => f.parseFile(), 2),
+        catchError((f) => of(null)),
+        filter((f): f is ManifestFile => f !== null),
+        shareReplay()
+      );
+      try {
+        // apply configmaps & secrets
+        await parsedFiles
+          .pipe(mergeMap((f) => f.applyManifestsAsObservableArr(true, ctx)))
+          .pipe(mergeMap((s) => s(), 1))
+          .toPromise();
+        // apply other manifests
+        await parsedFiles
+          .pipe(mergeMap((f) => f.applyManifestsAsObservableArr(false, ctx)))
+          .pipe(mergeMap((s) => s(), 1))
+          .toPromise();
+      } catch (error) {
+        await parsedFiles.forEach((m) => m.skipOnError()).catch(() => {});
+      }
+      await taskPromise;
     } catch (err) {
       return this.error(err.message, { exit: 1 });
     } finally {
@@ -87,42 +112,54 @@ interface TaskCtx extends Record<'orgId' | 'projectId' | 'envId', string> {
   isDir: boolean;
 }
 
-function applyFiles(files: FileInfo[], ctx: TaskCtx) {
+function applyFiles(files: ManifestFile[], ctx: TaskCtx) {
   return new Listr<TaskCtx>(
-    files.map((file) => {
+    files.map((manifestFile) => {
       return {
-        title: `File ${file.filepath}`,
-        task: async function processFile(ctx, task) {
-          const { orgId, projectId, envId } = ctx;
-          const { filepath, extension } = file;
-          const manifests = await parseK8sManifestsFromFile(
-            filepath,
-            extension
-          );
+        title: `File ${manifestFile.file.filepath}`,
+        task: async function processFile(_, task) {
+          await delay(2000);
+          manifestFile.sub.subscribe({
+            next: (v) => (task.output = v),
+            error: (v) => (task.output = v),
+          });
+          await manifestFile.sub.toPromise().catch(() => {});
+          const manifests = manifestFile.manifests;
           if (!manifests.length) {
-            // return cli.error('No valid Kubernetes manifests found', {
-            //   exit: 1,
-            // });
             task.skip('No valid Kubernetes manifests found');
           }
           return task.newListr(
             manifests.map((manifest, idx) => {
+              const title = `mainfest ${idx + 1}/${manifests.length} - ${
+                manifest.metadata.name || ''
+              } (${manifest.kind})`;
               return {
-                title: `mainfest ${idx + 1}/${manifests.length} - ${
-                  manifest.metadata.name || ''
-                } (${manifest.kind})`,
-                task: async (ctx, subTask): Promise<void> => {
-                  await applyManifest(orgId, projectId, envId, manifest);
+                title,
+                task: async (_, subTask) => {
+                  // return manifestFile.subjects[idx];
+                  // return new Observable((observer) => {
+                  //   manifestFile.subjects[idx].subscribe(observer);
+                  // });
+                  manifestFile.subjects[idx].subscribe({
+                    next: (v) => (subTask.output = v),
+                    error: (v) => (subTask.output = chalk.red(v)),
+                  });
+                  await manifestFile.subjects[idx]
+                    .pipe(catchError((v) => v.toString()))
+                    .toPromise();
                 },
                 bottomBar: Infinity,
+                options: { persistentOutput: true },
               };
             }),
             {
-              concurrent: false,
+              concurrent: true,
               rendererOptions: {
                 collapse: false,
                 showSubtasks: true,
                 collapseErrors: false,
+                collapseSkips: false,
+                clearOutput: false,
               },
               exitOnError: false,
             }
@@ -131,14 +168,21 @@ function applyFiles(files: FileInfo[], ctx: TaskCtx) {
       };
     }),
     {
-      ctx,
-      concurrent: false,
+      concurrent: true,
       exitOnError: false,
       rendererOptions: {
         collapse: false,
         showSubtasks: true,
         collapseErrors: false,
+        clearOutput: false,
+        collapseSkips: false,
       },
     }
   );
+}
+
+function delay(ms: number) {
+  return new Promise<void>((r) => {
+    setTimeout(() => r(), ms);
+  });
 }

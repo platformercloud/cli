@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { K8sObject } from './parser';
 
 export type SupportedExtension = 'json' | 'yaml' | 'yml';
 export interface FileInfo {
@@ -7,13 +8,18 @@ export interface FileInfo {
   extension: SupportedExtension;
 }
 
-export async function validateManifestPath(
-  inputPath: string
-): Promise<{ files: FileInfo[]; isDir: boolean }> {
+function resolvePath(inputPath: string) {
   let fileFolderPath = path.resolve(inputPath);
   if (!path.isAbsolute(fileFolderPath)) {
     fileFolderPath = path.resolve('../', fileFolderPath);
   }
+  return fileFolderPath;
+}
+
+export async function validateManifestPath(
+  inputPath: string
+): Promise<{ files: FileInfo[]; isDir: boolean }> {
+  let fileFolderPath = resolvePath(inputPath);
   let stat;
   try {
     stat = fs.statSync(fileFolderPath);
@@ -63,4 +69,17 @@ function getFileInfo(
     );
   }
   return { filepath: filePathPath, extension: ext as SupportedExtension };
+}
+
+export async function createOutputPath(envId: string) {
+  const outputPath = `platformer/${envId}`;
+  return fs.promises.mkdir(outputPath, { recursive: true }).catch((e) => {
+    console.log(e.code);
+  });
+}
+
+export async function writeManifestResult(data: K8sObject, envId: string) {
+  const filePath = `platformer/${envId}/${data.kind}-${data.metadata.name}`;
+  const str = JSON.stringify(data, null, 2);
+  await fs.promises.writeFile(resolvePath(filePath), str);
 }

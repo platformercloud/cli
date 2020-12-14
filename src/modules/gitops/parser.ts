@@ -13,8 +13,10 @@ export interface K8sObject {
 }
 
 /** Bare minimum validation for k8s objects (checks for apiVersion and kind) */
-export function isValidK8sObject(obj: Object) {
+export function isValidK8sObject(obj: any): obj is K8sObject {
   return (
+    typeof obj === 'object' &&
+    obj !== null &&
     obj.hasOwnProperty('apiVersion') &&
     obj.hasOwnProperty('kind') &&
     obj.hasOwnProperty('metadata')
