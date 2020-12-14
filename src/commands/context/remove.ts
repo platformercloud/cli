@@ -31,12 +31,17 @@ export default class RemoveContext extends Command {
       return this.error(`Invalid context name "${context}"`, { exit: 1 });
     }
 
-    config.set(`contexts.${context}`, undefined);
+    config.delete(`contexts.${context}` as any);
     this.log(`Context "${context} removed"`);
 
     // Replace default context if the removed context is set as default
     if (config.get('currentContext') === context) {
-      const newDefaultContext = Object.keys(contexts)[0];
+      const remainingContexts = config.get('contexts');
+      const newDefaultContext = Object.keys(remainingContexts)[0];
+      if (!newDefaultContext) {
+        //  a new context will be created on next run
+        return;
+      }
       config.set('currentContext', newDefaultContext);
       this.log(`Current context set to "${newDefaultContext}"`);
     }
