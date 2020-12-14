@@ -1,0 +1,13 @@
+diff --git a/node_modules/listr2/dist/renderer/default.renderer.js b/node_modules/listr2/dist/renderer/default.renderer.js
+index 24a497d..e7de367 100644
+--- a/node_modules/listr2/dist/renderer/default.renderer.js
++++ b/node_modules/listr2/dist/renderer/default.renderer.js
+@@ -262,7 +262,7 @@ class DefaultRenderer {
+         }
+         // dont return anything on some occasions
+         if (task.hasTitle() && source === 'error' && data === task.title) {
+-            return;
++            return [];
+         }
+         if (typeof data === 'string' && data.trim() !== '') {
+             // indent and color

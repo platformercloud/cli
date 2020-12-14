@@ -20,6 +20,8 @@
     "lookpath": "^1.1.0",
     "node-fetch": "^2.6.1",
     "node-fetch-har": "^1.0.1",
+    "patch-package": "^6.2.2",
+    "postinstall-postinstall": "^2.1.0",
     "rxjs": "^6.6.3",
     "tslib": "^1"
   },
@@ -78,6 +80,7 @@
   },
   "repository": "platformercloud/cli",
   "scripts": {
+    "postinstall": "patch-package",
     "postpack": "rimraf oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",

@@ -89,7 +89,7 @@ export class ManifestFile {
       }
     });
   }
-  applyManifestsAsObservableArr(
+  applyManifestsArr(
     prioritized: boolean,
     ctx: Record<'orgId' | 'projectId' | 'envId', string>
   ) {
@@ -114,4 +114,10 @@ export class ManifestFile {
       s.error('Skipped');
     });
   }
+}
+
+function delay(ms: number) {
+  return new Promise<void>((r) => {
+    setTimeout(() => r(), ms);
+  });
 }
