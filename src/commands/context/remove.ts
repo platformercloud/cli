@@ -32,14 +32,15 @@ export default class RemoveContext extends Command {
     }
 
     config.delete(`contexts.${context}` as any);
-    this.log(`Context "${context} removed"`);
+    this.log(`Context "${context}" removed`);
 
     // Replace default context if the removed context is set as default
     if (config.get('currentContext') === context) {
       const remainingContexts = config.get('contexts');
       const newDefaultContext = Object.keys(remainingContexts)[0];
       if (!newDefaultContext) {
-        //  a new context will be created on next run
+        //  default context will be created on next run
+        config.set('currentContext', 'default');
         return;
       }
       config.set('currentContext', newDefaultContext);
