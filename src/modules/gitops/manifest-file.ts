@@ -1,5 +1,4 @@
-import { fstat } from 'fs';
-import { BehaviorSubject, defer, from, ReplaySubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { applyManifest } from './api';
 import { FileInfo, writeManifestResult } from './fs';
 import {
@@ -7,7 +6,6 @@ import {
   K8sObject,
   parseK8sManifestsFromFile,
 } from './parser';
-import { cli } from 'cli-ux';
 
 const prioritizedKinds = ['ConfigMap', 'Secret'];
 
@@ -57,7 +55,6 @@ export class ManifestFile {
       const s = this.subjects[idx];
       const { orgId, projectId, envId } = ctx;
       s.next('Applying manifest');
-      // cli.log('Applying manifest');
       let res;
       try {
         res = await applyManifest(
@@ -68,23 +65,18 @@ export class ManifestFile {
         );
         resolve();
         if (!isValidK8sObject(res)) {
-          // cli.log('Failed to parse server response');
           return s.error('Failed to parse server response');
         }
       } catch (error) {
         reject();
-        // cli.log(error.message);
         return s.error(error.message);
       }
       s.next('Writing to file');
-      // cli.log('Writing to file');
       try {
         await writeManifestResult(res, envId);
         s.next('Done');
-        // cli.log('Done');
         s.complete();
       } catch (error) {
-        // cli.log('Failed to write to file');
         s.error('Failed to write to file');
       }
     });

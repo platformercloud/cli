@@ -9,5 +9,4 @@ node_modules
 /.idea
 /testyamls
 /platformer
-# ./bin/run apply ~/k8samples/hello-app/manifests --environment="cliapply"
 .vscode/settings.json
