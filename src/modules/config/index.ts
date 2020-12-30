@@ -26,8 +26,8 @@ export interface Context {
 }
 
 const config = new Conf<Config>({});
-
-if (!Boolean(config.get('contexts'))) {
+const initialConfigs = config.get('contexts');
+if (!Boolean(initialConfigs) || Object.keys(initialConfigs).length === 0) {
   config.set({
     currentContext: 'default',
     contexts: {
