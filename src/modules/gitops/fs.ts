@@ -79,8 +79,12 @@ export async function createOutputPath(envId: string) {
   });
 }
 
-export async function writeManifestResult(data: K8sObject, envId: string) {
-  const filePath = `platformer/${envId}/${data.kind}-${data.metadata.name}`;
+export async function writeManifestResult(
+  data: Record<string, any>,
+  manifest: K8sObject,
+  envId: string
+) {
+  const filePath = `platformer/${envId}/${manifest.kind}-${manifest.metadata.name}`;
   const str = JSON.stringify(data, null, 2);
   cli.log(filePath, resolvePath(filePath));
   await fs.promises.writeFile(resolvePath(filePath), str);

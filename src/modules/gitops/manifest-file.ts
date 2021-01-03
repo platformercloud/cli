@@ -114,7 +114,7 @@ export class ManifestObject {
         envId,
         modifiedManifest || this.manifest
       );
-      if (!isValidK8sObject(res)) {
+      if (res === null) {
         s.next(ManifestState.UNKNOWN_SUCCESS_RESPONSE);
         return s.complete();
       }
@@ -132,7 +132,7 @@ export class ManifestObject {
     }
     s.next(ManifestState.WRITING_TO_FILE);
     try {
-      await writeManifestResult(res, envId);
+      await writeManifestResult(res, this.manifest, envId);
       s.next(ManifestState.COMPLETE);
       s.complete();
     } catch (error) {

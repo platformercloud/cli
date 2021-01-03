@@ -10,7 +10,7 @@ export async function applyManifest(
   projectId: string,
   envId: string,
   manifest: K8sObject
-): Promise<unknown> {
+) {
   const url = `${getAPIGateway()}/${apiEndpoints.RUDDER_MAINFEST_IMPORT}`;
   // const url = `http://localhost:3000/api/v1/import/manifest`;
   const reqBody = {
@@ -32,7 +32,11 @@ export async function applyManifest(
   });
   if (response.ok) {
     try {
-      return (await response.json())?.data;
+      const data = (await response.json())?.data;
+      if (typeof data === 'object' && data !== null && data.ID) {
+        return data as Record<string, any>;
+      }
+      return null;
     } catch (error) {
       return null;
     }
