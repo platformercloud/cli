@@ -84,21 +84,20 @@ export class ManifestObject {
   constructor(manifest: K8sObject) {
     this.manifest = manifest;
     this.subject = new BehaviorSubject<ManifestState>(ManifestState.WAITING);
-    this.subject.subscribe({
-      next: (v) =>
-        v !== ManifestState.WAITING &&
-        cli.log(`${manifest.metadata.name} (${manifest.kind}) ${v}`),
-      error: (v) =>
-        cli.log(`${manifest.metadata.name} (${manifest.kind}) ${chalk.red(v)}`),
-    });
+    // this.subject.subscribe({
+    //   next: (v) =>
+    //     v !== ManifestState.WAITING &&
+    //     cli.log(`${manifest.metadata.name} (${manifest.kind}) ${v}`),
+    //   error: (v) =>
+    //     cli.log(`${manifest.metadata.name} (${manifest.kind}) ${chalk.red(v)}`),
+    // });
   }
-  get state() {
+  get state(): ManifestState {
     if (this.subject.hasError) return this.subject.thrownError as ManifestState;
     return this.subject.getValue();
   }
-  async waitTillCompletionAndGetValue() {
+  async waitTillCompletion() {
     await this.subject.toPromise().catch(() => {});
-    return this.state;
   }
   async applyManifest(
     ctx: Record<'orgId' | 'projectId' | 'envId', string>,

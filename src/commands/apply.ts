@@ -99,19 +99,28 @@ export default class Apply extends Command {
         shareReplay()
       );
       try {
-        // apply configmaps & secrets
+        // step1: apply configmaps & secrets
         await applyManifests(parsedFiles, ctx, true, 'configurations');
-        // apply other manifests
+        // step2: apply other manifests
         await applyManifests(parsedFiles, ctx, false, 'other manifests');
       } catch (error) {
+        // if error occurs, append msg to the running spinner
+        cli.action.stop('Error occured');
+        cli.action.start('Waiting until other manifests complete');
         // skip waiting tasks
         await parsedFiles.forEach((m) => m.skipOnError());
+        // wait till all running tasks are completed or thrown
+        await parsedFiles
+          .pipe(
+            mergeMap((file) => file.manifests),
+            mergeMap((manifest) => manifest.waitTillCompletion())
+          )
+          .toPromise();
+        cli.action.stop();
       }
-      // wait till all tasks are either complete or skipped & count states
       const statusArr = await parsedFiles
         .pipe(
-          mergeMap((file) => file.manifests),
-          mergeMap((manifest) => manifest.waitTillCompletionAndGetValue()),
+          mergeMap((file) => file.manifests.map((manifest) => manifest.state)),
           toArray()
         )
         .toPromise();
@@ -122,7 +131,6 @@ export default class Apply extends Command {
       const manifestCount = statusArr.length;
       const errCount = summary.get(ManifestState.ERROR) || 0;
       const skippedCount = summary.get(ManifestState.SKIPPED) || 0;
-
       // msg
       const successCount =
         (summary.get(ManifestState.UNKNOWN_SUCCESS_RESPONSE) || 0) +
