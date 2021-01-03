@@ -6,6 +6,7 @@ import { K8sObject } from './parser';
 export type SupportedExtension = 'json' | 'yaml' | 'yml';
 export interface FileInfo {
   filepath: string;
+  fileName: string;
   extension: SupportedExtension;
 }
 
@@ -44,12 +45,9 @@ export async function validateManifestPath(
           return null;
         }
       })
-      .filter(Boolean) as FileInfo[];
+      .filter((f): f is FileInfo => Boolean(f))
+      .sort((f1, f2) => f1.fileName.localeCompare(f2.fileName));
     if (files.length === 0) {
-      console.log(
-        files,
-        content.map((c) => c.name)
-      );
       throw new Error(`${fileFolderPath} doesn't contain any valid files`);
     }
     return { files, isDir: true };
@@ -58,18 +56,16 @@ export async function validateManifestPath(
   }
 }
 
-function getFileInfo(
-  filePathPath: string,
-  throwError: boolean
-): FileInfo | null {
-  const ext = path.extname(filePathPath).substr(1).toLowerCase();
+function getFileInfo(filePath: string, throwError: boolean): FileInfo | null {
+  const ext = path.extname(filePath).substr(1).toLowerCase();
+  const fileName = path.basename(filePath);
   if (!['json', 'yaml', 'yml'].includes(ext)) {
     if (!throwError) return null;
     throw new Error(
       `Unsupported file extension "${ext}". Must be of type: json/yaml/yml`
     );
   }
-  return { filepath: filePathPath, extension: ext as SupportedExtension };
+  return { filepath: filePath, fileName, extension: ext as SupportedExtension };
 }
 
 export async function createOutputPath(envId: string) {

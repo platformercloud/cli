@@ -107,6 +107,7 @@ export class ManifestObject {
     if (s.isStopped) return;
     const { orgId, projectId, envId } = ctx;
     let res;
+    s.next(ManifestState.APPLYING);
     try {
       res = await applyManifest(
         orgId,
@@ -189,6 +190,13 @@ export class ManifestObject {
     if (s.isStopped) return;
     // let tasks in progess, run until completion
     if (inProgressStates.includes(s.getValue())) return;
+    cli.log(
+      'SKIPPING ',
+      this.manifest.kind,
+      this.manifest.metadata.name,
+      ' ',
+      this.state
+    );
     s.error(ManifestState.SKIPPED);
   }
 }
