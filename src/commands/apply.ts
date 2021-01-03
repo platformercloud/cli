@@ -8,6 +8,7 @@ import {
   mergeAll,
   mergeMap,
   shareReplay,
+  takeUntil,
   toArray,
 } from 'rxjs/operators';
 import Command from '../base-command';
@@ -21,6 +22,8 @@ import {
   ManifestFile,
   ManifestObject,
   ManifestState,
+  skippedStateNotifier,
+  skipRemainingManifests,
 } from '../modules/gitops/manifest-file';
 import { writeHAR } from '../modules/util/fetch';
 import { tryValidateCommonFlags } from '../modules/util/validations';
@@ -94,21 +97,29 @@ export default class Apply extends Command {
       const parsedFiles = from(manifestFileArr).pipe(
         map((f) => defer(() => f.parseFile())),
         mergeAll(5),
+        takeUntil(skippedStateNotifier),
         catchError((f) => of(null)),
         filter((f): f is ManifestFile => f !== null),
         shareReplay()
       );
       try {
         // step1: apply configmaps & secrets
-        await applyManifests(parsedFiles, ctx, true, 'configurations');
-        // step2: apply other manifests
-        await applyManifests(parsedFiles, ctx, false, 'other manifests');
+        await applyManifests(parsedFiles, ctx, 1, {
+          start: 'Applying configurations',
+        });
+        // step2: apply deployments and jobs
+        await applyManifests(parsedFiles, ctx, 2, {
+          start: 'Applying deployments',
+        });
+        // step3: apply other manifests
+        await applyManifests(parsedFiles, ctx, null, {
+          start: 'Applying other manifests',
+        });
       } catch (error) {
         // if error occurs, append msg to the running spinner
         cli.action.stop('Error occured');
         cli.action.start('Waiting until other manifests complete');
-        // skip waiting tasks
-        await parsedFiles.forEach((m) => m.skipOnError());
+        skipRemainingManifests();
         // wait till all running tasks are completed or thrown
         await parsedFiles
           .pipe(
@@ -162,6 +173,7 @@ export default class Apply extends Command {
         skippedCount === 0 ? chalk.blue(0) : chalk.yellow(skippedCount)
       );
     } catch (err) {
+      cli.log(err);
       return this.error(err.message, { exit: 1 });
     } finally {
       writeHAR();
@@ -172,12 +184,12 @@ export default class Apply extends Command {
 async function applyManifests(
   parsedFiles: Observable<ManifestFile>,
   ctx: Record<'orgId' | 'projectId' | 'envId', string>,
-  isPrioritizedKind: boolean,
-  manifestType: string
+  priority: 1 | 2 | null,
+  msgs: Record<'start', string>
 ) {
-  cli.action.start(`Applying ${manifestType}`);
+  cli.action.start(msgs.start);
   const manifests = parsedFiles.pipe(
-    mergeMap((file) => file.getManifests(isPrioritizedKind))
+    mergeMap((file) => file.getManifests(priority))
   );
   const { length: mainifestCount } = await manifests
     .pipe(
@@ -186,7 +198,7 @@ async function applyManifests(
     )
     .toPromise();
   if (mainifestCount === 0) {
-    cli.action.stop(`No ${manifestType} found`);
+    cli.action.stop(`Not found`);
     return;
   }
   const incompleteManifests = await manifests

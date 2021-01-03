@@ -1,16 +1,34 @@
 import inquirer = require('inquirer');
 import cli from 'cli-ux';
 import { BehaviorSubject } from 'rxjs';
+import { first } from 'rxjs/operators';
 import { applyManifest } from './api';
 import { FileInfo, writeManifestResult } from './fs';
-import {
-  isValidK8sObject,
-  K8sObject,
-  parseK8sManifestsFromFile,
-} from './parser';
+import { K8sObject, parseK8sManifestsFromFile } from './parser';
 import { MatchedMultipleYamlObjectsError, YamlObject } from './YamlObject';
 import chalk = require('chalk');
-const prioritizedKinds = ['ConfigMap', 'Secret'];
+
+const priorities: Record<string, 1 | 2> = {
+  ConfigMap: 1,
+  Secret: 1,
+  PersistentVolume: 1,
+  PersistentVolumeClaim: 1,
+  Deployment: 2,
+  StatefulSet: 2,
+  DaemonSet: 2,
+  CronJob: 2,
+  Job: 2,
+};
+
+const skippedSubject = new BehaviorSubject<boolean>(false);
+export const skippedStateNotifier = skippedSubject.pipe(
+  first((s) => s === true)
+);
+
+export function skipRemainingManifests() {
+  skippedSubject.next(true);
+  skippedSubject.complete();
+}
 
 export class ManifestFile {
   readonly file: FileInfo;
@@ -27,13 +45,14 @@ export class ManifestFile {
       const manifests = await parseK8sManifestsFromFile(filepath, extension);
       this.#manifests = manifests
         .sort((a, b) => {
-          const bPriority = prioritizedKinds.includes(b.kind);
-          if (prioritizedKinds.includes(a.kind)) {
-            if (!bPriority) {
-              return -1;
-            }
+          const aPriority = priorities[a.kind];
+          const bPriority = priorities[b.kind];
+          if (aPriority && bPriority) {
+            return aPriority > bPriority ? -1 : 1;
           } else if (bPriority) {
             return 1;
+          } else if (aPriority) {
+            return -1;
           }
           return a.metadata.name.localeCompare(b.metadata.name);
         })
@@ -41,24 +60,14 @@ export class ManifestFile {
     } catch (error) {}
     return this;
   }
-  getManifests(prioritized: boolean) {
-    const selectedIdxArr = this.#manifests
+  getManifests(priority: 1 | 2 | null) {
+    return this.#manifests
       .map((m, idx) => {
-        const isPrioritizedKind = prioritizedKinds.includes(m.manifest.kind);
-        if (prioritized && isPrioritizedKind) return idx;
-        if (!prioritized && !isPrioritizedKind) return idx;
-        return -1;
+        const assignedPriority = priorities[m.manifest.kind] || null;
+        if (assignedPriority === priority) return m;
+        return null;
       })
-      .filter((idx) => idx !== -1);
-    return selectedIdxArr.map((mIdx) => {
-      const manifestObj = this.#manifests[mIdx];
-      return manifestObj;
-    });
-  }
-  skipOnError() {
-    this.#manifests.forEach((s) => {
-      s.skipOnError();
-    });
+      .filter((m): m is ManifestObject => m !== null);
   }
 }
 
@@ -84,6 +93,9 @@ export class ManifestObject {
   constructor(manifest: K8sObject) {
     this.manifest = manifest;
     this.subject = new BehaviorSubject<ManifestState>(ManifestState.WAITING);
+    skippedStateNotifier.subscribe(() => {
+      this.skipOnError();
+    });
     // this.subject.subscribe({
     //   next: (v) =>
     //     v !== ManifestState.WAITING &&
@@ -124,6 +136,11 @@ export class ManifestObject {
         error instanceof MatchedMultipleYamlObjectsError &&
         !modifiedManifest
       ) {
+        if (skippedSubject.getValue()) {
+          // request was already in progress, when skipped notification was issued.
+          // ignore matched objects, and mark as skipped
+          s.error(ManifestState.SKIPPED);
+        }
         this.matchedYamlObjects = error.matchedObjects;
         return s.next(ManifestState.MULTIPLE_OBJECTS_FOUND);
       } else {
@@ -137,7 +154,6 @@ export class ManifestObject {
       s.next(ManifestState.COMPLETE);
       s.complete();
     } catch (error) {
-      console.log(error);
       s.error(ManifestState.FAILED_TO_WRITE_TO_FILE);
     }
   }
@@ -148,7 +164,7 @@ export class ManifestObject {
     if (s.isStopped || s.getValue() !== ManifestState.MULTIPLE_OBJECTS_FOUND) {
       throw new Error('Invalid state');
     }
-    cli.warn(
+    cli.log(
       chalk.yellow(
         `Mutiple objects matched for manifest ${this.manifest.metadata.name}`
       )
