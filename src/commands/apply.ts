@@ -1,11 +1,9 @@
 import { flags } from '@oclif/command';
-import chalk = require('chalk');
 import { cli } from 'cli-ux';
 import { defer, from, Observable, of } from 'rxjs';
 import {
   catchError,
   filter,
-  last,
   map,
   mergeAll,
   mergeMap,
@@ -26,6 +24,7 @@ import {
 } from '../modules/gitops/manifest-file';
 import { writeHAR } from '../modules/util/fetch';
 import { tryValidateCommonFlags } from '../modules/util/validations';
+import chalk = require('chalk');
 
 export default class Apply extends Command {
   static description =
@@ -87,8 +86,9 @@ export default class Apply extends Command {
       },
     });
     const ctx = context as Required<typeof context>;
+    const fileFolderPath = args.filepath;
     try {
-      const { files, isDir } = await validateManifestPath(args.filepath);
+      const { files, isDir } = await validateManifestPath(fileFolderPath);
       await createOutputPath(ctx.envId);
       const manifestFileArr = files.map((file) => new ManifestFile(file));
       const parsedFiles = from(manifestFileArr).pipe(
@@ -106,14 +106,54 @@ export default class Apply extends Command {
       } catch (error) {
         // skip waiting tasks
         await parsedFiles.forEach((m) => m.skipOnError());
-        // wait till all tasks are either complete or skipped
-        await parsedFiles
-          .pipe(mergeMap((file) => file.manifests))
-          .pipe(mergeMap((manifest) => manifest.subject))
-          .toPromise();
       }
+      // wait till all tasks are either complete or skipped & count states
+      const statusArr = await parsedFiles
+        .pipe(
+          mergeMap((file) => file.manifests),
+          mergeMap((manifest) => manifest.waitTillCompletionAndGetValue()),
+          toArray()
+        )
+        .toPromise();
+      const summary = new Map<ManifestState, number>();
+      statusArr.forEach((status) => {
+        summary.set(status, (summary.get(status) || 0) + 1);
+      });
+      const manifestCount = statusArr.length;
+      const errCount = summary.get(ManifestState.ERROR) || 0;
+      const skippedCount = summary.get(ManifestState.SKIPPED) || 0;
+
+      // msg
+      const successCount =
+        (summary.get(ManifestState.UNKNOWN_SUCCESS_RESPONSE) || 0) +
+        (summary.get(ManifestState.FAILED_TO_WRITE_TO_FILE) || 0) +
+        (summary.get(ManifestState.COMPLETE) || 0);
+      if (manifestCount === 0) {
+        this.error(
+          `No valid manifests were found in the ${
+            isDir ? 'directory' : 'file'
+          }"${fileFolderPath}"`,
+          { exit: 1 }
+        );
+      } else if (manifestCount === successCount) {
+        cli.log(chalk.green(`Success`));
+      } else if (successCount === 0) {
+        cli.log(chalk.red(`Failure`));
+      } else {
+        cli.log(chalk.yellow(`Failed to apply some manifests.`));
+      }
+      // counts
+      cli.log('Manifests found: ', chalk.blue(manifestCount));
+      cli.log('Success count: ', chalk.blue(successCount));
+      cli.log(
+        'Errors occurred: ',
+        errCount === 0 ? chalk.blue(0) : chalk.red(errCount)
+      );
+      cli.log(
+        'Skipped manfests: ',
+        skippedCount === 0 ? chalk.blue(0) : chalk.yellow(skippedCount)
+      );
     } catch (err) {
-      console.log(err);
       return this.error(err.message, { exit: 1 });
     } finally {
       writeHAR();
@@ -132,8 +172,10 @@ async function applyManifests(
     mergeMap((file) => file.getManifests(isPrioritizedKind))
   );
   const { length: mainifestCount } = await manifests
-    .pipe(mergeMap(async (manifest) => manifest.applyManifest(ctx), 5))
-    .pipe(toArray())
+    .pipe(
+      mergeMap(async (manifest) => manifest.applyManifest(ctx), 5),
+      toArray()
+    )
     .toPromise();
   if (mainifestCount === 0) {
     cli.action.stop(`No ${manifestType} found`);
@@ -146,10 +188,10 @@ async function applyManifests(
           return manifest;
         }
         return null;
-      }, 1)
+      }, 1),
+      filter((m): m is ManifestObject => m !== null),
+      toArray()
     )
-    .pipe(filter((m): m is ManifestObject => m !== null))
-    .pipe(toArray())
     .toPromise();
   if (incompleteManifests.length === 0) {
     cli.action.stop();

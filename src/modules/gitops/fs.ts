@@ -1,3 +1,4 @@
+import { cli } from 'cli-ux';
 import * as fs from 'fs';
 import * as path from 'path';
 import { K8sObject } from './parser';
@@ -81,6 +82,6 @@ export async function createOutputPath(envId: string) {
 export async function writeManifestResult(data: K8sObject, envId: string) {
   const filePath = `platformer/${envId}/${data.kind}-${data.metadata.name}`;
   const str = JSON.stringify(data, null, 2);
-  console.log(resolvePath(filePath));
+  cli.log(filePath, resolvePath(filePath));
   await fs.promises.writeFile(resolvePath(filePath), str);
 }
