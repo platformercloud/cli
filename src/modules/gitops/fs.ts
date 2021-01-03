@@ -81,5 +81,6 @@ export async function createOutputPath(envId: string) {
 export async function writeManifestResult(data: K8sObject, envId: string) {
   const filePath = `platformer/${envId}/${data.kind}-${data.metadata.name}`;
   const str = JSON.stringify(data, null, 2);
+  console.log(resolvePath(filePath));
   await fs.promises.writeFile(resolvePath(filePath), str);
 }

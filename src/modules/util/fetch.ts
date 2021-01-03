@@ -12,6 +12,6 @@ export const fetch = withHar(nodeFetch, {
 }) as typeof nodeFetch;
 
 export function writeHAR(fileName = `har-${new Date().toISOString()}.har`) {
-  // const filePath = path.join(homeDir, 'logs', fileName);
-  // fs.writeFileSync(filePath, JSON.stringify(createHarLog(har), null, 2));
+  const filePath = path.join(homeDir, 'logs', fileName);
+  fs.writeFileSync(filePath, JSON.stringify(createHarLog(har), null, 2));
 }

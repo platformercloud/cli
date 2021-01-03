@@ -5,16 +5,17 @@ import config from '../modules/config';
 import cli from 'cli-ux';
 import * as chalk from 'chalk';
 
-const consoleURL = 'https://beta.console.platformer.com';
+const consoleURL = 'https://console.dev.x.platformer.com';
 const port = 9999;
 
 export default class Login extends Command {
-  static description = 'Log in to the CLI with your Platformer Account (logs into the current context)';
+  static description =
+    'Log in to the CLI with your Platformer Account (logs into the current context)';
 
   async run() {
     const loginURL = new URL(`${consoleURL}/cli-login`);
     loginURL.searchParams.append('access_type', 'offline');
-    loginURL.searchParams.append('redirect_uri', `http://127.0.0.1:${port}`);
+    loginURL.searchParams.append('redirect_uri', `http://localhost:${port}`);
     loginURL.searchParams.append('response_type', 'code');
 
     const server = createServer(async (req, res) => {

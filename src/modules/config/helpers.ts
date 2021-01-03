@@ -7,7 +7,11 @@ export function getAuthToken(): string {
 
 export function getAPIGateway(): string {
   const currentContext: string = config.get('currentContext');
-  return config.get(`contexts.${currentContext}.platformerAPIGateway`);
+  const url = config.get(`contexts.${currentContext}.platformerAPIGateway`);
+  if (typeof url !== 'string' || url === '') {
+    throw new Error('Invalid API Gateway url');
+  }
+  return url.endsWith('/') ? url.slice(0, -1) : url;
 }
 
 export function getDefaultOrganization(): { name: string; id: string } {

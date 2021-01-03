@@ -1,8 +1,8 @@
-import endpoints from '.././util/api-endpoints';
-import { getAPIGateway, getAuthToken } from '../config/helpers';
+import { getAuthToken } from '../config/helpers';
 import APIError from '../errors/api-error';
 import { fetch } from '../util/fetch';
 import { K8sObject } from './parser';
+import { MatchedMultipleYamlObjectsError, YamlObject } from './YamlObject';
 
 export async function applyManifest(
   orgId: string,
@@ -29,12 +29,20 @@ export async function applyManifest(
     },
     body: JSON.stringify(reqBody),
   });
-  if (!response.ok) {
-    throw new APIError('Failed to apply kubernetes manifest', response);
+  if (response.ok) {
+    try {
+      return (await response.json())?.data;
+    } catch (error) {
+      return null;
+    }
   }
+  let yamlObjects;
   try {
-    return (await response.json())?.data;
-  } catch (error) {
-    return null;
+    const res = await response.json();
+    yamlObjects = res?.errors?.message?.additional;
+  } catch (error) {}
+  if (Array.isArray(yamlObjects) && yamlObjects.length > 1) {
+    throw new MatchedMultipleYamlObjectsError(yamlObjects as YamlObject[]);
   }
+  throw new APIError('Failed to apply kubernetes manifest', response);
 }
