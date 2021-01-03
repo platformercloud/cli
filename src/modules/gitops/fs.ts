@@ -82,6 +82,5 @@ export async function writeManifestResult(
 ) {
   const filePath = `platformer/${envId}/${manifest.kind}-${manifest.metadata.name}`;
   const str = JSON.stringify(data, null, 2);
-  cli.log(filePath, resolvePath(filePath));
   await fs.promises.writeFile(resolvePath(filePath), str);
 }
