@@ -5,13 +5,18 @@ import * as path from 'path';
 import { homedir } from 'os';
 const homeDir = homedir();
 
-const har: any[] = [];
+const LOG_REQUESTS = false;
 
-export const fetch = withHar(nodeFetch, {
-  onHarEntry: (entry: any) => har.push(entry),
-}) as typeof nodeFetch;
+export const { fetch, writeHAR } = (function () {
+  if (!LOG_REQUESTS) return { fetch: nodeFetch, writeHAR() {} };
+  const har: any[] = [];
+  const fetch = withHar(nodeFetch, {
+    onHarEntry: (entry: any) => har.push(entry),
+  }) as typeof nodeFetch;
 
-export function writeHAR(fileName = `har-${new Date().toISOString()}.har`) {
-  const filePath = path.join(homeDir, 'logs', fileName);
-  fs.writeFileSync(filePath, JSON.stringify(createHarLog(har), null, 2));
-}
+  function writeHAR(fileName = `har-${new Date().toISOString()}.har`) {
+    const filePath = path.join(homeDir, 'logs', fileName);
+    fs.writeFileSync(filePath, JSON.stringify(createHarLog(har), null, 2));
+  }
+  return { fetch, writeHAR };
+})();
