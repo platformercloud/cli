@@ -24,10 +24,10 @@ jobs:
 
       - run: npm i -g @oclif/dev-cli
       - run: sudo apt install nsis p7zip-full
-      
-      # - run: oclif-dev pack:win
-      - run: oclif-dev pack:macos
+            
       - run: oclif-dev pack:deb
+      - run: oclif-dev pack:win
+#       - run: oclif-dev pack:macos
 
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
