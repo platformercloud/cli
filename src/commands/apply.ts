@@ -220,7 +220,7 @@ async function printLogs(parsedFiles: Observable<ManifestFile>) {
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
         const fileName = manifest.file.file.fileName;
-        successTree.insert(`${kind} ${name} created`, subTree);
+        successTree.insert(`${kind} ${name} created (${fileName})`, subTree);
         if (manifest.state === ManifestState.UNKNOWN_SUCCESS_RESPONSE) {
           subTree.insert(chalk.yellow('Unknown server response'));
         }
