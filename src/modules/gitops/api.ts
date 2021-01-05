@@ -12,7 +12,6 @@ export async function applyManifest(
   manifest: K8sObject
 ) {
   const url = `${getAPIGateway()}/${apiEndpoints.RUDDER_MAINFEST_IMPORT}`;
-  // const url = `http://localhost:3000/api/v1/import/manifest`;
   const reqBody = {
     name: manifest.metadata.name,
     organization_id: orgId,

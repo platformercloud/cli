@@ -96,13 +96,6 @@ export class ManifestObject {
     skippedStateNotifier.subscribe(() => {
       this.skipOnError();
     });
-    // this.subject.subscribe({
-    //   next: (v) =>
-    //     v !== ManifestState.WAITING &&
-    //     cli.log(`${manifest.metadata.name} (${manifest.kind}) ${v}`),
-    //   error: (v) =>
-    //     cli.log(`${manifest.metadata.name} (${manifest.kind}) ${chalk.red(v)}`),
-    // });
   }
   get state(): ManifestState {
     if (this.subject.hasError) return this.subject.thrownError as ManifestState;
