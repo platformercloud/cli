@@ -25,7 +25,7 @@ jobs:
       - run: npm i -g @oclif/dev-cli
       - run: apt install nsis p7zip-full
       
-      - run: oclif-dev pack:win
+      # - run: oclif-dev pack:win
       - run: oclif-dev pack:macos
       - run: oclif-dev pack:deb
 
