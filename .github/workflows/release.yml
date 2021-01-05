@@ -23,7 +23,7 @@ jobs:
       # - run: yarn publish --access public
 
       - run: npm i -g @oclif/dev-cli
-      - run: apt install nsis p7zip-full
+      - run: sudo apt install nsis p7zip-full
       
       # - run: oclif-dev pack:win
       - run: oclif-dev pack:macos
