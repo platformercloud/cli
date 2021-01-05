@@ -23,11 +23,11 @@ jobs:
       # - run: yarn version minor
       # - run: yarn publish --access public
 
-      - run: npm i -g @oclif/dev-cli
+      - run: sudo npm i -g @oclif/dev-cli
       - run: sudo apt install nsis p7zip-full
             
-      - run: oclif-dev pack:deb
-      - run: oclif-dev pack:win
+      - run: sudo oclif-dev pack:deb
+      - run: sudo oclif-dev pack:win
 #       - run: oclif-dev pack:macos
 
         env:
