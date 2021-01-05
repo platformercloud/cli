@@ -56,7 +56,7 @@ export class ManifestFile {
           }
           return a.metadata.name.localeCompare(b.metadata.name);
         })
-        .map((m) => new ManifestObject(m));
+        .map((m) => new ManifestObject(m, this));
     } catch (error) {}
     return this;
   }
@@ -89,10 +89,13 @@ const inProgressStates = [
 export class ManifestObject {
   readonly manifest: K8sObject;
   readonly subject: BehaviorSubject<ManifestState>;
+  readonly file: ManifestFile;
   matchedYamlObjects: YamlObject[] = [];
-  constructor(manifest: K8sObject) {
+  errorMsg: string | null = null;
+  constructor(manifest: K8sObject, file: ManifestFile) {
     this.manifest = manifest;
     this.subject = new BehaviorSubject<ManifestState>(ManifestState.WAITING);
+    this.file = file;
     skippedStateNotifier.subscribe(() => {
       this.skipOnError();
     });
@@ -137,6 +140,7 @@ export class ManifestObject {
         this.matchedYamlObjects = error.matchedObjects;
         return s.next(ManifestState.MULTIPLE_OBJECTS_FOUND);
       } else {
+        this.errorMsg = (error as Error).message;
         s.error(ManifestState.ERROR);
       }
       throw error;

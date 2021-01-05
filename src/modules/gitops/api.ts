@@ -32,7 +32,7 @@ export async function applyManifest(
   if (response.ok) {
     try {
       const data = (await response.json())?.data;
-      if (typeof data === 'object' && data !== null && data.ID) {
+      if (typeof data === 'object' && data !== null) {
         return data as Record<string, any>;
       }
       return null;
@@ -41,12 +41,17 @@ export async function applyManifest(
     }
   }
   let yamlObjects;
+  let errorMsg;
   try {
     const res = await response.json();
     yamlObjects = res?.errors?.message?.additional;
+    errorMsg = res?.errors?.message?.error;
   } catch (error) {}
   if (Array.isArray(yamlObjects) && yamlObjects.length > 1) {
     throw new MatchedMultipleYamlObjectsError(yamlObjects as YamlObject[]);
+  }
+  if (typeof errorMsg === 'string' && errorMsg.length > 0) {
+    throw new APIError(errorMsg, response);
   }
   throw new APIError('Failed to apply kubernetes manifest', response);
 }
