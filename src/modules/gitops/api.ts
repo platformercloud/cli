@@ -3,7 +3,7 @@ import APIError from '../errors/api-error';
 import apiEndpoints from '../util/api-endpoints';
 import { fetch } from '../util/fetch';
 import { K8sObject } from './parser';
-import { MatchedMultipleYamlObjectsError, YamlObject } from './YamlObject';
+import { MatchedMultipleYamlObjectsError, YamlObject } from './yaml-object';
 
 export async function applyManifest(
   orgId: string,

@@ -10,7 +10,5 @@
     "target": "es2017",
     "composite": false
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }
