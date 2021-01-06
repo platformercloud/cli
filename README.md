@@ -21,7 +21,7 @@ The Platformer CLI can be installed via NPM (Node Package Manager) or through a 
 
 ## Installation via a Standalone binary
 
-- Check the Releases section (in this repository) and download the relavent binary (based on your Operating System).
+- Check the [Releases section](https://github.com/platformercloud/cli/releases) and download the relavent binary based on your Operating System.
 
 - Once installed, the Platformer CLI will be accessible with the `platformer` command.
 
