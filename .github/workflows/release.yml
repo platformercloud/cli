@@ -22,7 +22,7 @@ jobs:
       # - run: yarn
       # - run: yarn version minor
       # - run: yarn publish --access public
-      - run: yarn
+      # - run: yarn
       - run: sudo npm i -g @oclif/dev-cli
       - run: sudo apt install nsis p7zip-full
 
@@ -45,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - run: yarn
+      # - run: yarn
       - run: npm i -g @oclif/dev-cli
       - run: oclif-dev pack:macos
 
@@ -90,13 +90,7 @@ jobs:
           name: Release ${{ github.ref }}
           prerelease: false
           draft: true
-          # body_path: ${{ github.workflow }}/CHANGELOG.txt
           files: |
-            artifacts/deb
-            artifacts/win
-            artifacts/macos
-          # ${{ github.workflow }}/dist/win/platformer-${{ github.ref }}-x64.exe
-          # ${{ github.workflow }}/dist/win/platformer-${{ github.ref }}-x86.exe
-          # ${{ github.workflow }}/dist/deb/platformer-${{ github.ref }}-linux-arm.tar.gz
+            artifacts/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
