@@ -71,6 +71,9 @@
       "select": {
         "description": "Select and set the Organization, Project and Environment in your context"
       }
+    },
+    "macos": {
+      "identifier": "com.platformer.cli"
     }
   },
   "repository": "platformercloud/cli",
@@ -81,8 +84,5 @@
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md"
   },
-  "types": "lib/index.d.ts",
-  "macos": {
-    "identifier": "com.platformer.cli"
-  }
+  "types": "lib/index.d.ts"
 }

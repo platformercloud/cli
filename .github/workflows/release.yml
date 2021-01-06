@@ -48,7 +48,7 @@ jobs:
 
       - run: yarn
       - run: npm i -g @oclif/dev-cli
-      - run: oclif-dev pack:macos -r $GITHUB_WORKSPACE
+      - run: oclif-dev pack:macos
 
       - uses: actions/upload-artifact@v2
         name: Upload MacOS binaries as artifacts
