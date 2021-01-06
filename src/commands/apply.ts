@@ -1,5 +1,4 @@
 import { flags } from '@oclif/command';
-import chalk = require('chalk');
 import Command from '../base-command';
 import {
   getDefaultEnvironment,
@@ -53,7 +52,7 @@ export default class Apply extends Command {
   ];
 
   async run() {
-    const { flags, args } = this.parse(Apply);
+    const { args } = this.parse(Apply);
 
     try {
       const { filepath, extension } = validateManifestFile(args.filepath);

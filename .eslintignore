@@ -1,1 +1,6 @@
 /lib
+/dist
+/tmp
+/docs
+/node_modules
+/bin
