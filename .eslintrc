@@ -6,6 +6,9 @@
   ],
   "rules": {
     "quotes": ["error", "single"],
-    "no-extra-semi": "off"
+    "no-extra-semi": "off",
+    "no-extra-boolean-cast": "off",
+    "unicorn/catch-error-name": "off",
+    "unicorn/explicit-length-check": "off"
   }
 }
