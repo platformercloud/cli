@@ -39,25 +39,25 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  macos-build:
-    name: Build MacOS binary
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
+  # macos-build:
+  #   name: Build MacOS binary
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - run: yarn
-      - run: npm i -g @oclif/dev-cli
-      - run: oclif-dev pack:macos
+  #     - run: yarn
+  #     - run: npm i -g @oclif/dev-cli
+  #     - run: oclif-dev pack:macos
 
-      - uses: actions/upload-artifact@v2
-        name: Upload MacOS binaries as artifacts
-        with:
-          name: macos-binaries-${{ github.run_id }}
-          path: ${{ github.workspace }}/dist/**/*
-          retention-days: 1
-          if-no-files-found: error
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #     - uses: actions/upload-artifact@v2
+  #       name: Upload MacOS binaries as artifacts
+  #       with:
+  #         name: macos-binaries-${{ github.run_id }}
+  #         path: ${{ github.workspace }}/dist/**/*
+  #         retention-days: 1
+  #         if-no-files-found: error
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   release:
     name: Github Release
