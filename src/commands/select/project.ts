@@ -15,7 +15,7 @@ export default class SelectProject extends Command {
 
   static examples = [
     '$ platformer select:project # interactive select',
-    '$ platformer select:project <project-name>',
+    '$ platformer select:project <project-name>'
   ];
 
   static flags = {
@@ -24,8 +24,8 @@ export default class SelectProject extends Command {
       char: 'O',
       description: 'organization name',
       required: false,
-      default: () => getDefaultOrganization()?.name,
-    }),
+      default: () => getDefaultOrganization()?.name
+    })
   };
 
   static args = [
@@ -33,8 +33,8 @@ export default class SelectProject extends Command {
       name: 'project',
       required: false,
       description:
-        '(OPTIONAL) Name of the Project to set in the current context. If not provided, the CLI will open an interactive prompt to select an Project.',
-    },
+        '(OPTIONAL) Name of the Project to set in the current context. If not provided, the CLI will open an interactive prompt to select an Project.'
+    }
   ];
 
   async run() {
@@ -42,11 +42,17 @@ export default class SelectProject extends Command {
     const { orgId } = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
-        required: true,
-      },
+        required: true
+      }
     });
 
     const projectList = await fetchProjects(orgId);
+    if (projectList?.length === 0 || projectList?.length === null || projectList?.length === undefined) {
+      return this.error(
+        'You need create a project first',
+        { exit: 1 }
+      );
+    }
     let project: Project | undefined;
     if (args.project) {
       project = projectList.find((p) => p.name === args.project);
@@ -62,8 +68,8 @@ export default class SelectProject extends Command {
           name: 'projectName',
           message: 'Select a project',
           type: 'list',
-          choices: projectList,
-        },
+          choices: projectList
+        }
       ]);
       project = projectList.find((p) => p.name === projectName);
     }
@@ -71,7 +77,7 @@ export default class SelectProject extends Command {
     const currentContext: string = config.get('currentContext');
     config.set(`contexts.${currentContext}.project`, {
       id: project!.project_id,
-      name: project!.name,
+      name: project!.name
     });
 
     this.log(
