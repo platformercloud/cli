@@ -27,7 +27,7 @@ jobs:
       - run: sudo apt install nsis p7zip-full
 
       - run: sudo oclif-dev pack:deb
-      # - run: sudo oclif-dev pack:win
+      - run: sudo oclif-dev pack:win
 
       - uses: actions/upload-artifact@v2
         name: Upload Windows and Debian binaries as artifacts
@@ -44,7 +44,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cat ${{ github.workspace }}/package.json
 
       - run: yarn
       - run: npm i -g @oclif/dev-cli
@@ -81,7 +80,7 @@ jobs:
           name: macos-binaries-${{ github.run_id }}
           path: artifacts
 
-      - run: ls -R artifacts/
+      - run: tree artifacts/
 
       - name: Release
         uses: softprops/action-gh-release@v1
