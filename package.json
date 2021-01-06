@@ -6,6 +6,9 @@
   "bin": {
     "platformer": "./bin/run"
   },
+  "macos": {
+    "identifier": "com.platformer.cli"
+  },
   "bugs": "https://github.com/platformercloud/cli/issues",
   "dependencies": {
     "@oclif/command": "^1",

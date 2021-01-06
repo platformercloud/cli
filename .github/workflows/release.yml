@@ -10,7 +10,7 @@ on:
 
 jobs:
   npm-win-deb-build:
-    name: Release NPM package and build Windows and Debian binaries
+    name: NPM pkg + Windows & Debian binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -37,15 +37,15 @@ jobs:
           if-no-files-found: error
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          
+
   macos-build:
     name: Build MacOS binary
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      
+
       - run: yarn
-      - run: npm i -g @oclif/dev-cli      
+      - run: npm i -g @oclif/dev-cli
       - run: oclif-dev pack:macos
 
       - uses: actions/upload-artifact@v2
@@ -59,7 +59,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   release:
-    name: Create Github Release
+    name: Github Release
     needs:
       - npm-win-deb-build
       - macos-build
@@ -78,7 +78,7 @@ jobs:
         with:
           name: macos-binaries-${{ github.run_id }}
           path: artifacts
-      
+
       - run: ls -R artifacts/
 
       - name: Release
