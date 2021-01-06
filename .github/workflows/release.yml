@@ -26,7 +26,7 @@ jobs:
       - run: sudo apt install nsis p7zip-full
 
       - run: sudo oclif-dev pack:deb
-      - run: sudo oclif-dev pack:win
+      # - run: sudo oclif-dev pack:win
 
       - uses: actions/upload-artifact@v2
         name: Upload Windows and Debian binaries as artifacts
@@ -39,7 +39,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           
   macos-build:
-    name: Release NPM package and build Windows and Debian binaries
+    name: Build MacOS binary
     runs-on: macos-11.0
     steps:
       - uses: actions/checkout@v2
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
+
       - uses: actions/download-artifact@v2
         name: Download Windows and Debian builds
         with:
