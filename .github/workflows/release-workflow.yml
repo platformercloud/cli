@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - "v*.*.*"
-      - test*
-      - t*
 
 jobs:
   npm-win-deb-build:
@@ -19,11 +17,10 @@ jobs:
           registry-url: "https://registry.npmjs.org"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      # - run: yarn
-      # - run: yarn version minor
-      # - run: yarn publish --access public
 
       - run: yarn
+
+      - run: yarn publish --access public
 
       - run: sudo npm i -g @oclif/dev-cli
       - run: sudo apt install nsis p7zip-full
@@ -56,9 +53,7 @@ jobs:
           path: ${{ github.workspace }}/dist/**/*
           retention-days: 1
           if-no-files-found: error
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
+          
   release:
     name: Github Release
     needs:
