@@ -22,9 +22,11 @@ jobs:
 
       - name: Get current tag
         id: get_tag
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+        run: |
+          export TAG=($GITHUB_REF | cut -d / -f 3)
+          echo $TAG
 
-      - run: echo $VERSION
+      - run: echo $TAG
       # - run: yarn
       # - run: yarn version minor
       # - run: yarn publish --access public
