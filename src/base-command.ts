@@ -12,7 +12,7 @@ export default abstract class Command extends OCLIFCommand {
     // Handle custom errors globally
     switch (error.constructor) {
       case APIError: {
-        const e = <APIError>error;
+        const e = error as APIError;
         if (e.statusCode === 401) {
           return this.error('You are not logged in', {
             exit: 1,
@@ -25,7 +25,7 @@ export default abstract class Command extends OCLIFCommand {
         return this.error(e.message, { exit: 1, ...e.oclifErrorOptions });
       }
       case ValidationError: {
-        const e = <ValidationError>error;
+        const e = error as ValidationError;
         return this.error(e.message, { exit: 1, ...e.oclifErrorOptions });
       }
       default:

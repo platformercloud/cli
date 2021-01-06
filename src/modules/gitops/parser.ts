@@ -30,7 +30,7 @@ export async function parseK8sManifestsFromFile(
   const rawData = await fs.promises.readFile(filepath, { encoding: 'utf8' });
 
   const isYAML = ['yaml', 'yml'].includes(extension);
-  let parsed: Object[] = isYAML
+  let parsed: Record<string, any>[] = isYAML
     ? YAML.safeLoadAll(rawData)
     : JSON.parse(rawData);
 
