@@ -1,10 +1,11 @@
 import * as fs from 'fs';
-import nodeFetch from 'node-fetch';
-import { createHarLog, withHar } from 'node-fetch-har';
-import { homedir } from 'os';
 import * as path from 'path';
-const homeDir = homedir();
+import nodeFetch from 'node-fetch';
+import { homedir } from 'os';
+// @ts-ignore
+import { createHarLog, withHar } from 'node-fetch-har';
 
+const homeDir = homedir();
 const LOG_REQUESTS = false;
 
 export const { fetch, writeHAR } = (function () {
