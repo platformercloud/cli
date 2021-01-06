@@ -22,17 +22,14 @@ jobs:
 
       - name: Get current tag
         id: get_tag
-        run: |
-          export TAG=($GITHUB_REF | cut -d / -f 3)
-          echo $TAG
+        run: echo $GITHUB_REF | cut -d / -f 3
 
-      - run: echo $TAG
       # - run: yarn
       # - run: yarn version minor
       # - run: yarn publish --access public
 
       - run: yarn
-      
+
       - run: sudo npm i -g @oclif/dev-cli
       - run: sudo apt install nsis p7zip-full
 
