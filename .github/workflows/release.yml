@@ -39,11 +39,12 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  # macos-build:
-  #   name: Build MacOS binary
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
+  macos-build:
+    name: Build MacOS binary
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cat ${{ github.workspace }}/package.json
 
   #     - run: yarn
   #     - run: npm i -g @oclif/dev-cli
