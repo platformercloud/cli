@@ -14,11 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: "14"
-          registry-url: "https://registry.npmjs.org"
-      - run: yarn
+      # - uses: actions/setup-node@v1
+      #   with:
+      #     node-version: "14"
+      #     registry-url: "https://registry.npmjs.org"
+      # - run: yarn
       # - run: yarn version minor
       # - run: yarn publish --access public
 
@@ -40,7 +40,7 @@ jobs:
           
   macos-build:
     name: Build MacOS binary
-    runs-on: macos-11.0
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - run: npm i -g @oclif/dev-cli      
@@ -57,6 +57,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   release:
+    name: Create Github Release
     needs:
       - npm-win-deb-build
       - macos-build
