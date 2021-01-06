@@ -19,11 +19,6 @@ jobs:
           registry-url: "https://registry.npmjs.org"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Get current tag
-        id: get_tag
-        run: echo $GITHUB_REF | cut -d / -f 3
-
       # - run: yarn
       # - run: yarn version minor
       # - run: yarn publish --access public
@@ -75,7 +70,7 @@ jobs:
 
       - name: Get current tag
         id: get_tag
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+        run: echo $GITHUB_REF | cut -d / -f 3
 
       - uses: actions/download-artifact@v2
         name: Download Windows and Debian builds
