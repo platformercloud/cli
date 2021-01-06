@@ -4,8 +4,7 @@
     "quotes": ["error", "single"],
     "no-extra-semi": "off",
     "no-extra-boolean-cast": "off",
-    // note you must disable the base rule as it can report incorrect errors
-    "no-use-before-define": "off",
+    "@typescript-eslint/ban-ts-ignore": "off",
     "@typescript-eslint/no-use-before-define": [
       "error",
       { "classes": false, "functions": false }
