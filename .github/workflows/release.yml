@@ -9,13 +9,11 @@ on:
       - test*
 
 jobs:
-  build:
+  npm-win-deb-build:
+    name: Release NPM package and build Windows and Debian binaries
     runs-on: ubuntu-latest
     steps:
-      - run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
-
       - uses: actions/checkout@v2
-      # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v1
         with:
           node-version: "14"
@@ -29,12 +27,29 @@ jobs:
 
       - run: sudo oclif-dev pack:deb
       - run: sudo oclif-dev pack:win
-      #       - run: oclif-dev pack:macos
 
       - uses: actions/upload-artifact@v2
         name: Upload Windows and Debian binaries as artifacts
         with:
-          name: ${{ github.ref }}-win-deb-binaries
+          name: win-deb-binaries
+          path: ${{ github.workspace }}/dist/**/*
+          retention-days: 1
+          if-no-files-found: error
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+  macos-build:
+    name: Release NPM package and build Windows and Debian binaries
+    runs-on: macos-11.0
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo npm i -g @oclif/dev-cli      
+      - run: oclif-dev pack:macos
+
+      - uses: actions/upload-artifact@v2
+        name: Upload MacOS binaries as artifacts
+        with:
+          name: macos-binaries
           path: ${{ github.workspace }}/dist/**/*
           retention-days: 1
           if-no-files-found: error
@@ -43,14 +58,25 @@ jobs:
 
   release:
     needs:
-      - build
+      - npm-win-deb-build
+      - macos-build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      
       - uses: actions/download-artifact@v2
+        name: Download Windows and Debian builds
         with:
-          name: ${{ github.ref }}-win-deb-binaries
+          name: win-deb-binaries
           path: artifacts
+
+      - uses: actions/download-artifact@v2
+        name: Download MacOS builds
+        with:
+          name: macos-binaries
+          path: artifacts
+      
+      - run: ls -R artifacts/
 
       - name: Release
         uses: softprops/action-gh-release@v1
