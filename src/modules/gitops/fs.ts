@@ -1,4 +1,3 @@
-import { cli } from 'cli-ux';
 import * as fs from 'fs';
 import * as path from 'path';
 import { K8sObject } from './parser';
@@ -70,9 +69,9 @@ function getFileInfo(filePath: string, throwError: boolean): FileInfo | null {
 
 export async function createOutputPath(envId: string) {
   const outputPath = `platformer/${envId}`;
-  return fs.promises.mkdir(outputPath, { recursive: true }).catch((e) => {
-    console.log(e.code);
-  });
+  try {
+    return await fs.promises.mkdir(outputPath, { recursive: true });
+  } catch (error) {}
 }
 
 export async function writeManifestResult(

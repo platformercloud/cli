@@ -1,13 +1,14 @@
 {
-  "extends": [
-    "oclif",
-    "oclif-typescript",
-    "eslint:recommended"
-  ],
+  "extends": ["oclif", "oclif-typescript", "eslint:recommended"],
   "rules": {
     "quotes": ["error", "single"],
     "no-extra-semi": "off",
     "no-extra-boolean-cast": "off",
+    "@typescript-eslint/ban-ts-ignore": "off",
+    "@typescript-eslint/no-use-before-define": [
+      "error",
+      { "classes": false, "functions": false }
+    ],
     "unicorn/catch-error-name": "off",
     "unicorn/explicit-length-check": "off"
   }
