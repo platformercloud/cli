@@ -2,10 +2,10 @@ name: Release Workflow for Platformer CLI
 
 on:
   push:
-    branches: 
-      - feature/github-release-action
+    # branches:
+    # - feature/github-release-action
     tags:
-#       - 'v*.*.*'
+      #       - 'v*.*.*'
       - test*
 
 jobs:
@@ -26,33 +26,45 @@ jobs:
 
       - run: sudo npm i -g @oclif/dev-cli
       - run: sudo apt install nsis p7zip-full
-            
+
       - run: sudo oclif-dev pack:deb
       - run: sudo oclif-dev pack:win
-#       - run: oclif-dev pack:macos
+      #       - run: oclif-dev pack:macos
 
       - uses: actions/upload-artifact@v2
         name: Upload Windows and Debian binaries as artifacts
         with:
-          name: win-deb-binaries
+          name: ${{ github.ref }}-win-deb-binaries
           path: ${{ github.workspace }}/dist/**/*
           retention-days: 1
+          if-no-files-found: error
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-#       - name: Release
-#         uses: softprops/action-gh-release@v1
-#         if: startsWith(github.ref, 'refs/tags/')
-#         with:
-#           tag_name: ${{ github.ref }}
-#           name: Release ${{ github.ref }}
-#           prerelease: false
-#           draft: true
-#           # body_path: ${{ github.workflow }}/CHANGELOG.txt
-#           files: |
-#             ${{ github.workflow }}/dist/win/platformer-${{ github.ref }}-x64.exe
-#             ${{ github.workflow }}/dist/win/platformer-${{ github.ref }}-x86.exe
-#             ${{ github.workflow }}/dist/deb/platformer-${{ github.ref }}-linux-arm.tar.gz
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: ${{ github.ref }}-win-deb-binaries
+          path: artifacts
 
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref }}
+          prerelease: false
+          draft: true
+          # body_path: ${{ github.workflow }}/CHANGELOG.txt
+          files: |
+            artifacts/**/*
+
+          # ${{ github.workflow }}/dist/win/platformer-${{ github.ref }}-x64.exe
+          # ${{ github.workflow }}/dist/win/platformer-${{ github.ref }}-x86.exe
+          # ${{ github.workflow }}/dist/deb/platformer-${{ github.ref }}-linux-arm.tar.gz
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
