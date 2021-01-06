@@ -80,7 +80,7 @@ jobs:
           name: macos-binaries-${{ github.run_id }}
           path: artifacts
 
-      - run: tree artifacts/
+      - run: ls -R artifacts/
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -92,8 +92,9 @@ jobs:
           draft: true
           # body_path: ${{ github.workflow }}/CHANGELOG.txt
           files: |
-            artifacts/**/*
-
+            artifacts/deb
+            artifacts/win
+            artifacts/macos
           # ${{ github.workflow }}/dist/win/platformer-${{ github.ref }}-x64.exe
           # ${{ github.workflow }}/dist/win/platformer-${{ github.ref }}-x86.exe
           # ${{ github.workflow }}/dist/deb/platformer-${{ github.ref }}-linux-arm.tar.gz
