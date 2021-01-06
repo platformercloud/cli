@@ -7,3 +7,6 @@
 /tmp
 node_modules
 /.idea
+/testyamls
+/platformer
+.vscode/settings.json
