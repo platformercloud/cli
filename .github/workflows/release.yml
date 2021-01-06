@@ -21,7 +21,7 @@ jobs:
       # - run: yarn
       # - run: yarn version minor
       # - run: yarn publish --access public
-
+      - run: yarn
       - run: sudo npm i -g @oclif/dev-cli
       - run: sudo apt install nsis p7zip-full
 
@@ -43,6 +43,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+      
+      - run: yarn
       - run: npm i -g @oclif/dev-cli      
       - run: oclif-dev pack:macos
 
