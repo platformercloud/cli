@@ -2,7 +2,7 @@ import { cli } from 'cli-ux';
 import { Observable } from 'rxjs';
 import { count, filter, mergeMap, tap, toArray } from 'rxjs/operators';
 import { ManifestFile } from './manifest-file';
-import { ManifestObject, ManifestState } from './manifest-object';
+import { ManifestFileObject, ManifestState } from './manifest-object';
 import chalk = require('chalk');
 
 export async function applyManifests(
@@ -33,7 +33,7 @@ export async function applyManifests(
         }
         return null;
       }, 1),
-      filter((m): m is ManifestObject => m !== null),
+      filter((m): m is ManifestFileObject => m !== null),
       toArray()
     )
     .toPromise();

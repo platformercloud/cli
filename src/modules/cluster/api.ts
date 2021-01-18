@@ -1,8 +1,9 @@
-import fetch from 'node-fetch';
 import config from '../../modules/config';
 import { getAPIGateway, getAuthToken } from '../config/helpers';
 import APIError from '../errors/api-error';
+import { K8sObject } from '../gitops/parser';
 import endpoints from '../util/api-endpoints';
+import { fetch } from '../util/fetch';
 
 export interface AgentCredentials {
   clientID: string;
@@ -86,4 +87,78 @@ export async function listClusters(
     throw new APIError('Failed to fetch connected cluster list', response);
   }
   return await response.json();
+}
+
+interface ClusterResourceQuery {
+  orgId: string;
+  projectId: string;
+  clusterId: string;
+  apiVersion: string;
+  kind: string;
+}
+interface ClusterResources {
+  clusterID: string;
+  payload?: K8sObject[];
+}
+
+/**
+ * Query any resource on the Cluster
+ * Tip: use kubectl api-versions and kubectl api-resources to figure out the exact
+ * ApiVersion and ResourceKind to query.
+ */
+export async function queryResource<T = any>(
+  { orgId, projectId, clusterId, apiVersion, kind }: ClusterResourceQuery,
+  q?: {
+    namespace?: string;
+    name?: string;
+    labelSelector?: string;
+    fieldSelector?: string;
+    limit?: number;
+  }
+): Promise<ClusterResources> {
+  apiVersion = encodeURIComponent(apiVersion);
+  kind = encodeURIComponent(kind);
+  const url = new URL(
+    `${getAPIGateway()}/mizzen/api/v1/query/${clusterId}/${apiVersion}/${kind}`
+  );
+  const params = url.searchParams;
+  if (q?.namespace) params.set('namespace', q?.namespace);
+  if (q?.name) params.set('name', q?.name);
+  if (q?.labelSelector) params.set('labelSelector', q?.labelSelector);
+  if (q?.fieldSelector) params.set('fieldSelector', q?.fieldSelector);
+  if (q?.limit) params.set('limit', `${q?.limit}`);
+  const response = await fetch(url.href, {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-organization-id': orgId,
+      'x-project-id': projectId,
+      Authorization: getAuthToken(),
+    },
+  });
+  if (response.ok) {
+    const data = await response.json();
+    if (typeof data.clusterID === 'string') {
+      const resources = data as ClusterResources;
+      resources.payload?.forEach((m) => {
+        m.kind = m.kind ?? kind;
+        m.apiVersion = m.apiVersion ?? apiVersion;
+      });
+      return resources;
+    }
+  }
+  throw new APIError('Failed to fetch cluster resources', response);
+}
+
+export interface ClusterNamespace {
+  metadata: { name: string };
+}
+export async function getClusterNamespaces(
+  query: Omit<ClusterResourceQuery, 'kind' | 'apiVersion'>
+) {
+  const res = await queryResource<ClusterNamespace>({
+    ...query,
+    kind: 'Namespace',
+    apiVersion: 'v1',
+  });
+  return res.payload ?? [];
 }

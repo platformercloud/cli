@@ -1,30 +1,32 @@
 import { flags } from '@oclif/command';
 import { cli } from 'cli-ux';
-import { defer, from, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import {
-  catchError,
+  concatMap,
   count,
   filter,
-  map,
-  mergeAll,
   mergeMap,
-  shareReplay,
-  takeUntil,
   tap,
   toArray,
 } from 'rxjs/operators';
 import Command from '../base-command';
+import { getClusterNamespaces, listClusters } from '../modules/cluster/api';
 import {
   getDefaultEnvironment,
   getDefaultOrganization,
   getDefaultProject,
 } from '../modules/config/helpers';
-import { createOutputPath, validateManifestPath } from '../modules/gitops/fs';
-import { ManifestFile } from '../modules/gitops/manifest-file';
+import ValidationError from '../modules/errors/validation-error';
+import { createOutputPath } from '../modules/gitops/fs';
+import { ManifestImportGroup } from '../modules/gitops/manifest-group';
+import {
+  importTypes,
+  manifestImportPriorities,
+} from '../modules/gitops/manifest-import-types';
 import {
   ManifestFileObject,
+  ManifestObject,
   ManifestState,
-  skippedStateNotifier,
   skipRemainingManifests,
 } from '../modules/gitops/manifest-object';
 import { writeHAR } from '../modules/util/fetch';
@@ -64,18 +66,24 @@ export default class Apply extends Command {
       multiple: false,
       default: () => getDefaultEnvironment()?.name,
     }),
+    cluster: flags.string({
+      char: 'C',
+      description: 'Cluster Name',
+      required: true,
+      multiple: false,
+    }),
+    namespace: flags.string({
+      char: 'N',
+      description: 'Namspace',
+      required: true,
+      multiple: false,
+    }),
   };
 
-  static args = [
-    {
-      name: 'filepath',
-      required: true,
-      description: 'Path to YAML file',
-    },
-  ];
+  static args = [];
 
   async run() {
-    const { flags, args } = this.parse(Apply);
+    const { flags } = this.parse(Apply);
     const context = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
@@ -90,63 +98,69 @@ export default class Apply extends Command {
         required: true,
       },
     });
-    const ctx = context as Required<typeof context>;
-    const fileFolderPath = args.filepath;
+    const { orgId, projectId, envId } = context as Required<typeof context>;
+    const clusterName = flags['cluster'];
+    const namespace = flags['namespace'];
+    const { cluster } = await validateClusterNamespace({
+      orgId,
+      projectId,
+      clusterName,
+      namespace,
+    });
+    const clusterId = cluster.id;
+    await createOutputPath(envId);
+    const ctx = { orgId, projectId, clusterId, namespace };
+    const importGroups = manifestImportPriorities.map((priority) => {
+      const group = importTypes[priority];
+      return new ManifestImportGroup(group, ctx);
+    });
     try {
-      const { files, isDir } = await validateManifestPath(fileFolderPath);
-      await createOutputPath(ctx.envId);
-      const manifestFileArr = files.map((file) => new ManifestFile(file));
-      const parsedFiles = from(manifestFileArr).pipe(
-        map((f) => defer(() => f.parseFile())),
-        mergeAll(5),
-        takeUntil(skippedStateNotifier),
-        catchError(() => of(null)),
-        filter((f): f is ManifestFile => f !== null),
-        shareReplay()
-      );
       try {
-        // step1: apply configmaps & secrets
-        await applyManifests(parsedFiles, ctx, 1, {
-          start: 'Applying configurations',
-        });
-        // step2: apply deployments and jobs
-        await applyManifests(parsedFiles, ctx, 2, {
-          start: 'Applying deployments',
-        });
-        // step3: apply other manifests
-        await applyManifests(parsedFiles, ctx, null, {
-          start: 'Applying other manifests',
-        });
+        await of(...importGroups)
+          .pipe(
+            concatMap((group) => {
+              const manifestOfGroup = group.getManifests();
+              return applyManifests(
+                manifestOfGroup,
+                { orgId, projectId, envId },
+                {
+                  start: `Applying ${group.resourceTypes.description}`,
+                }
+              );
+            })
+          )
+          .toPromise();
       } catch (error) {
         // if error occurs, append msg to the running spinner
         cli.action.stop('Error occured');
+        cli.log(error);
         cli.action.start('Waiting until other manifests complete');
         skipRemainingManifests();
         // wait till all running tasks are completed or thrown
-        await parsedFiles
+        await of(...importGroups)
           .pipe(
-            mergeMap((file) => file.manifests),
+            mergeMap((group) => group.getFetchedManifests()),
             mergeMap((manifest) => manifest.waitTillCompletion())
           )
           .toPromise();
         cli.action.stop();
       }
-      const statusArr = await parsedFiles
+      const statusArr = await of(...importGroups)
         .pipe(
-          mergeMap((file) => file.manifests.map((manifest) => manifest.state)),
+          mergeMap((group) =>
+            group.getFetchedManifests().map((manifest) => manifest.state)
+          ),
           toArray()
         )
         .toPromise();
       const manifestCount = statusArr.length;
       if (manifestCount === 0) {
         this.error(
-          `No valid manifests were found in the ${
-            isDir ? 'directory' : 'file'
-          }"${fileFolderPath}"`,
+          `No supported manifests were found in the namespace ${namespace}`,
           { exit: 1 }
         );
       }
-      await printLogs(parsedFiles);
+      await printLogs(importGroups);
       printSummary(statusArr);
     } catch (err) {
       cli.log(err);
@@ -157,16 +171,40 @@ export default class Apply extends Command {
   }
 }
 
+async function validateClusterNamespace({
+  orgId,
+  projectId,
+  clusterName,
+  namespace,
+}: {
+  orgId: string;
+  projectId: string;
+  clusterName: string;
+  namespace: string;
+}) {
+  const clusters = await listClusters(orgId, projectId!);
+  const cluster = clusters.find((c) => c.name === clusterName);
+  if (!cluster) {
+    throw new ValidationError(`Invalid Cluster [${clusterName}]`);
+  }
+  const clusterId = cluster.id;
+  const namespaces = await getClusterNamespaces({
+    orgId,
+    projectId,
+    clusterId,
+  });
+  if (!namespaces.some((ns) => ns.metadata.name === namespace)) {
+    throw new ValidationError(`Invalid Namespace [${namespace}]`);
+  }
+  return { cluster };
+}
+
 async function applyManifests(
-  parsedFiles: Observable<ManifestFile>,
+  manifests: Observable<ManifestObject>,
   ctx: Record<'orgId' | 'projectId' | 'envId', string>,
-  priority: 1 | 2 | null,
   msgs: Record<'start', string>
 ) {
   cli.action.start(msgs.start);
-  const manifests = parsedFiles.pipe(
-    mergeMap((file) => file.getManifests(priority))
-  );
   const { length: mainifestCount } = await manifests
     .pipe(
       mergeMap(async (manifest) => manifest.applyManifest(ctx), 5),
@@ -204,8 +242,10 @@ async function applyManifests(
   }
 }
 
-async function printLogs(parsedFiles: Observable<ManifestFile>) {
-  const manifests = parsedFiles.pipe(mergeMap((file) => file.manifests));
+async function printLogs(groups: ManifestImportGroup[]) {
+  const manifests = of(...groups).pipe(
+    mergeMap((group) => group.getFetchedManifests())
+  );
   const successStates = [
     ManifestState.UNKNOWN_SUCCESS_RESPONSE,
     ManifestState.FAILED_TO_WRITE_TO_FILE,
@@ -219,8 +259,7 @@ async function printLogs(parsedFiles: Observable<ManifestFile>) {
         const subTree = cli.tree();
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
-        const fileName = manifest.file.file.fileName;
-        successTree.insert(`${kind} ${name} created (${fileName})`, subTree);
+        successTree.insert(`${kind} ${name} created`, subTree);
         if (manifest.state === ManifestState.UNKNOWN_SUCCESS_RESPONSE) {
           subTree.insert(chalk.yellow('Unknown server response'));
         }
@@ -245,8 +284,7 @@ async function printLogs(parsedFiles: Observable<ManifestFile>) {
         const subTree = cli.tree();
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
-        const fileName = manifest.file.file.fileName;
-        errorTree.insert(`${kind} ${name} (${fileName})`, subTree);
+        errorTree.insert(`${kind} ${name}`, subTree);
         if (manifest.errorMsg) {
           subTree.insert(chalk.red(manifest.errorMsg));
         }
@@ -268,8 +306,7 @@ async function printLogs(parsedFiles: Observable<ManifestFile>) {
         const subTree = cli.tree();
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
-        const fileName = manifest.file.file.fileName;
-        skippedTree.insert(`${kind} ${name} (${fileName})`, subTree);
+        skippedTree.insert(`${kind} ${name}`, subTree);
       }),
       count(),
       tap((count) => {

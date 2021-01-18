@@ -1,5 +1,5 @@
 import { FileInfo } from './fs';
-import { ManifestObject } from './manifest-object';
+import { ManifestFileObject } from './manifest-object';
 import { parseK8sManifestsFromFile } from './parser';
 
 const priorities: Record<string, 1 | 2> = {
@@ -16,7 +16,7 @@ const priorities: Record<string, 1 | 2> = {
 
 export class ManifestFile {
   readonly file: FileInfo;
-  #manifests: ManifestObject[] = [];
+  #manifests: ManifestFileObject[] = [];
   constructor(file: FileInfo) {
     this.file = file;
   }
@@ -40,7 +40,7 @@ export class ManifestFile {
           }
           return a.metadata.name.localeCompare(b.metadata.name);
         })
-        .map((m) => new ManifestObject(m, this));
+        .map((m) => new ManifestFileObject(m, this));
     } catch (error) {}
     return this;
   }
@@ -51,6 +51,6 @@ export class ManifestFile {
         if (assignedPriority === priority) return m;
         return null;
       })
-      .filter((m): m is ManifestObject => m !== null);
+      .filter((m): m is ManifestFileObject => m !== null);
   }
 }

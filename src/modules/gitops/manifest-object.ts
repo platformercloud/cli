@@ -33,16 +33,15 @@ const inProgressStates = [
   ManifestState.APPLYING,
   ManifestState.WRITING_TO_FILE,
 ];
+
 export class ManifestObject {
   readonly manifest: K8sObject;
   readonly subject: BehaviorSubject<ManifestState>;
-  readonly file: ManifestFile;
   matchedYamlObjects: YamlObject[] = [];
   errorMsg: string | null = null;
-  constructor(manifest: K8sObject, file: ManifestFile) {
+  constructor(manifest: K8sObject) {
     this.manifest = manifest;
     this.subject = new BehaviorSubject<ManifestState>(ManifestState.WAITING);
-    this.file = file;
     skippedStateNotifier.subscribe(() => {
       this.skipOnError();
     });
@@ -153,5 +152,13 @@ export class ManifestObject {
     // let tasks in progess, run until completion
     if (inProgressStates.includes(s.getValue())) return;
     s.error(ManifestState.SKIPPED);
+  }
+}
+
+export class ManifestFileObject extends ManifestObject {
+  readonly file: ManifestFile;
+  constructor(manifest: K8sObject, file: ManifestFile) {
+    super(manifest);
+    this.file = file;
   }
 }
