@@ -1,3 +1,4 @@
+import { cli } from 'cli-ux';
 import * as fs from 'fs';
 import * as path from 'path';
 import { K8sObject } from './parser';
@@ -74,22 +75,27 @@ export async function createOutputPath(envId: string) {
   } catch (error) {}
 }
 
-const createdAppFolders = new Set<string>();
+let createdAppFolders: Set<string>;
 
 export async function writeManifestResult(
   data: Record<string, any>,
   manifest: K8sObject,
   envId: string
 ) {
-  const appName =
-    manifest.metadata['platformer_app_name'] || manifest.metadata.name;
-  const fileName = `${manifest.kind}-${manifest.metadata.name}`;
-  const outputPath = path.join('platformer', envId, appName);
-  if (!createdAppFolders.has(appName)) {
-    try {
-      fs.mkdirSync(outputPath);
-    } catch (error) {}
+  createdAppFolders = createdAppFolders ?? new Set<string>();
+  const belongsToApp = !!manifest.metadata['app_environment_id'];
+  let outputPath = path.join('platformer', envId);
+  if (belongsToApp) {
+    const appName =
+      manifest.metadata['platformer_app_name'] || manifest.metadata.name;
+    outputPath = path.join(outputPath, appName);
+    if (!createdAppFolders.has(appName)) {
+      try {
+        fs.mkdirSync(outputPath);
+      } catch (error) {}
+    }
   }
+  const fileName = `${manifest.kind}-${manifest.metadata.name}.yaml`;
   const filePath = path.join(outputPath, fileName);
   const str = JSON.stringify(data, null, 2);
   await fs.promises.writeFile(resolvePath(filePath), str);

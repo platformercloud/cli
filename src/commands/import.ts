@@ -133,7 +133,6 @@ export default class Apply extends Command {
       } catch (error) {
         // if error occurs, append msg to the running spinner
         cli.action.stop('Error occured');
-        cli.log(error);
         cli.action.start('Waiting until other manifests complete');
         skipRemainingManifests();
         // wait till all running tasks are completed or thrown
