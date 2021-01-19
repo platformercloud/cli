@@ -34,8 +34,8 @@ export class ManifestImportGroup {
       mergeMap((r) => fetchResourcesOfType(query, r), 4),
       takeUntil(skippedStateNotifier),
       map((v) => v.payload),
-      filter((v): v is K8sObject[] => Boolean(v)),
       mergeAll(),
+      filter(shouldImport),
       map((v) => new ManifestObject(v)),
       tap((v) => this.#manifests.push(v)),
       shareReplay()
@@ -47,6 +47,13 @@ export class ManifestImportGroup {
   getManifests() {
     return this.#observable;
   }
+}
+
+function shouldImport(v: K8sObject) {
+  const isJobWithCronJobOwner =
+    v.kind === 'Job' &&
+    v.ownerReferences?.some((ref) => ref.kind === 'CronJob');
+  return !isJobWithCronJobOwner;
 }
 
 function fetchResourcesOfType(query: ResourceQuery, r: ResourceType) {

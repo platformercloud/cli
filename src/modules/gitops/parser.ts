@@ -1,6 +1,12 @@
-import { SupportedExtension } from './fs';
 import * as fs from 'fs';
+import { SupportedExtension } from './fs';
 import YAML = require('js-yaml');
+
+interface OwnerReference {
+  apiVersion: string;
+  kind: string;
+  name: string;
+}
 
 export interface K8sObject {
   apiVersion: string;
@@ -9,6 +15,7 @@ export interface K8sObject {
     name: string;
     [key: string]: any;
   };
+  ownerReferences?: null | Array<OwnerReference>;
   [key: string]: any;
 }
 

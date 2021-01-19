@@ -98,7 +98,7 @@ interface ClusterResourceQuery {
 }
 interface ClusterResources {
   clusterID: string;
-  payload?: K8sObject[];
+  payload: K8sObject[];
 }
 
 /**
@@ -139,11 +139,12 @@ export async function queryResource<T = any>(
     const data = await response.json();
     if (typeof data.clusterID === 'string') {
       const resources = data as ClusterResources;
+      const { clusterID, payload } = resources;
       resources.payload?.forEach((m) => {
         m.kind = m.kind ?? kind;
         m.apiVersion = m.apiVersion ?? apiVersion;
       });
-      return resources;
+      return { clusterID, payload: payload ?? [] };
     }
   }
   throw new APIError('Failed to fetch cluster resources', response);
@@ -160,5 +161,5 @@ export async function getClusterNamespaces(
     kind: 'Namespace',
     apiVersion: 'v1',
   });
-  return res.payload ?? [];
+  return res.payload;
 }
