@@ -95,6 +95,7 @@
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "watch": "tsc -w",
     "preversion": "yarn run test && oclif-dev readme && git add README.md"
   },
   "types": "lib/index.d.ts"

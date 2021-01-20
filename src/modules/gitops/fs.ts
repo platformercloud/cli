@@ -74,12 +74,28 @@ export async function createOutputPath(envId: string) {
   } catch (error) {}
 }
 
+let createdAppFolders: Set<string>;
+
 export async function writeManifestResult(
   data: Record<string, any>,
   manifest: K8sObject,
   envId: string
 ) {
-  const filePath = `platformer/${envId}/${manifest.kind}-${manifest.metadata.name}`;
+  createdAppFolders = createdAppFolders ?? new Set<string>();
+  const belongsToApp = !!manifest.metadata['app_environment_id'];
+  let outputPath = path.join('platformer', envId);
+  if (belongsToApp) {
+    const appName =
+      manifest.metadata['platformer_app_name'] || manifest.metadata.name;
+    outputPath = path.join(outputPath, appName);
+    if (!createdAppFolders.has(appName)) {
+      try {
+        fs.mkdirSync(outputPath);
+      } catch (error) {}
+    }
+  }
+  const fileName = `${manifest.kind}-${manifest.metadata.name}.yaml`;
+  const filePath = path.join(outputPath, fileName);
   const str = JSON.stringify(data, null, 2);
   await fs.promises.writeFile(resolvePath(filePath), str);
 }

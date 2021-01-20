@@ -10,3 +10,4 @@ node_modules
 /testyamls
 /platformer
 .vscode/settings.json
+tsconfig.tsbuildinfo

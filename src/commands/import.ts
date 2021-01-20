@@ -1,40 +1,35 @@
 import { flags } from '@oclif/command';
 import { cli } from 'cli-ux';
-import { defer, from, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import {
-  catchError,
+  concatMap,
   count,
   filter,
-  map,
-  mergeAll,
   mergeMap,
-  shareReplay,
-  takeUntil,
   tap,
   toArray,
 } from 'rxjs/operators';
 import Command from '../base-command';
-import { ensureTargetNamespace } from '../modules/apps/environment';
+import { getClusterNamespaces, listClusters } from '../modules/cluster/api';
 import {
   getDefaultEnvironment,
   getDefaultOrganization,
   getDefaultProject,
 } from '../modules/config/helpers';
-import { createOutputPath, validateManifestPath } from '../modules/gitops/fs';
-import { ManifestFile } from '../modules/gitops/manifest-file';
-import {
-  getKindToPriorityMap,
-  importTypes,
-} from '../modules/gitops/manifest-import-types';
+import ValidationError from '../modules/errors/validation-error';
+import { createOutputPath } from '../modules/gitops/fs';
+import { ManifestImportGroup } from '../modules/gitops/manifest-group';
+import { importTypes } from '../modules/gitops/manifest-import-types';
 import {
   ManifestFileObject,
+  ManifestObject,
   ManifestState,
-  skippedStateNotifier,
   skipRemainingManifests,
 } from '../modules/gitops/manifest-object';
 import { writeHAR } from '../modules/util/fetch';
 import { tryValidateCommonFlags } from '../modules/util/validations';
 import chalk = require('chalk');
+import { ensureTargetNamespace } from '../modules/apps/environment';
 
 export default class Apply extends Command {
   static description =
@@ -69,6 +64,18 @@ export default class Apply extends Command {
       multiple: false,
       default: () => getDefaultEnvironment()?.name,
     }),
+    cluster: flags.string({
+      char: 'C',
+      description: 'Cluster Name',
+      required: true,
+      multiple: false,
+    }),
+    namespace: flags.string({
+      char: 'N',
+      description: 'Namspace',
+      required: true,
+      multiple: false,
+    }),
     'target-ns': flags.string({
       char: 'T',
       description: 'Target namespace',
@@ -77,16 +84,10 @@ export default class Apply extends Command {
     }),
   };
 
-  static args = [
-    {
-      name: 'filepath',
-      required: true,
-      description: 'Path to YAML file',
-    },
-  ];
+  static args = [];
 
   async run() {
-    const { flags, args } = this.parse(Apply);
+    const { flags } = this.parse(Apply);
     const context = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
@@ -101,75 +102,77 @@ export default class Apply extends Command {
         required: true,
       },
     });
-    const ctx = context as Required<typeof context>;
-    const fileFolderPath = args.filepath;
+    const { orgId, projectId, envId } = context as Required<typeof context>;
+    const clusterName = flags['cluster'];
+    const sourceNS = flags['namespace'];
+    const { cluster } = await validateClusterNamespace({
+      orgId,
+      projectId,
+      clusterName,
+      namespace: sourceNS,
+    });
     const targetNS = flags['target-ns'];
-    const { orgId, projectId, envId } = ctx;
+    cli.log(`Target namespace [${targetNS || sourceNS}]`);
     if (targetNS) {
-      cli.log(`Target namespace [${targetNS}]`);
       await ensureTargetNamespace({ orgId, projectId, envId, name: targetNS });
     }
-    const { priorities, priorityMap, importTypeMap } = getKindToPriorityMap(
-      importTypes
+    const clusterId = cluster.id;
+    await createOutputPath(envId);
+    const ctx = { orgId, projectId, clusterId, namespace: sourceNS };
+    // apply source namespace if target is not provided
+    const typesToImport = targetNS
+      ? importTypes.filter((f) => !f.skipIfTargetProvided)
+      : importTypes;
+    const importGroups = typesToImport.map(
+      (importType) =>
+        new ManifestImportGroup(importType, ctx, sourceNS, targetNS)
     );
     try {
-      const { files, isDir } = await validateManifestPath(fileFolderPath);
-      await createOutputPath(ctx.envId);
-      const manifestFileArr = files.map(
-        (file) => new ManifestFile(file, priorityMap, targetNS)
-      );
-      const parsedFiles = from(manifestFileArr).pipe(
-        map((f) => defer(() => f.parseFile())),
-        mergeAll(5),
-        takeUntil(skippedStateNotifier),
-        catchError(() => of(null)),
-        filter((f): f is ManifestFile => f !== null),
-        shareReplay()
-      );
       try {
-        // apply manifests ordered by priority
-        // ignore namespaces if target ns provided
-        for (const priority of priorities) {
-          if (importTypes[priority].skipIfTargetProvided && targetNS) continue;
-          const description = importTypeMap.get(priority)?.description;
-          await applyManifests(parsedFiles, ctx, priority, {
-            start: `Applying ${description}`,
-          });
-        }
-        // apply all kinds not specified in priority map
-        await applyManifests(parsedFiles, ctx, null, {
-          start: 'Applying other manifests',
-        });
+        await of(...importGroups)
+          .pipe(
+            concatMap((group) => {
+              const manifestOfGroup = group.getManifests();
+              return applyManifests(
+                manifestOfGroup,
+                { orgId, projectId, envId },
+                {
+                  start: `Applying ${group.resourceTypes.description}`,
+                }
+              );
+            })
+          )
+          .toPromise();
       } catch (error) {
         // if error occurs, append msg to the running spinner
         cli.action.stop('Error occured');
         cli.action.start('Waiting until other manifests complete');
         skipRemainingManifests();
         // wait till all running tasks are completed or thrown
-        await parsedFiles
+        await of(...importGroups)
           .pipe(
-            mergeMap((file) => file.manifests),
+            mergeMap((group) => group.getFetchedManifests()),
             mergeMap((manifest) => manifest.waitTillCompletion())
           )
           .toPromise();
         cli.action.stop();
       }
-      const statusArr = await parsedFiles
+      const statusArr = await of(...importGroups)
         .pipe(
-          mergeMap((file) => file.manifests.map((manifest) => manifest.state)),
+          mergeMap((group) =>
+            group.getFetchedManifests().map((manifest) => manifest.state)
+          ),
           toArray()
         )
         .toPromise();
       const manifestCount = statusArr.length;
       if (manifestCount === 0) {
         this.error(
-          `No valid manifests were found in the ${
-            isDir ? 'directory' : 'file'
-          }"${fileFolderPath}"`,
+          `No supported manifests were found in the namespace ${sourceNS}`,
           { exit: 1 }
         );
       }
-      await printLogs(parsedFiles);
+      await printLogs(importGroups);
       printSummary(statusArr);
     } catch (err) {
       cli.log(err);
@@ -180,16 +183,40 @@ export default class Apply extends Command {
   }
 }
 
+async function validateClusterNamespace({
+  orgId,
+  projectId,
+  clusterName,
+  namespace,
+}: {
+  orgId: string;
+  projectId: string;
+  clusterName: string;
+  namespace: string;
+}) {
+  const clusters = await listClusters(orgId, projectId!);
+  const cluster = clusters.find((c) => c.name === clusterName);
+  if (!cluster) {
+    throw new ValidationError(`Invalid Cluster [${clusterName}]`);
+  }
+  const clusterId = cluster.id;
+  const namespaces = await getClusterNamespaces({
+    orgId,
+    projectId,
+    clusterId,
+  });
+  if (!namespaces.some((ns) => ns.metadata.name === namespace)) {
+    throw new ValidationError(`Invalid Namespace [${namespace}]`);
+  }
+  return { cluster };
+}
+
 async function applyManifests(
-  parsedFiles: Observable<ManifestFile>,
+  manifests: Observable<ManifestObject>,
   ctx: Record<'orgId' | 'projectId' | 'envId', string>,
-  priority: number | null,
   msgs: Record<'start', string>
 ) {
   cli.action.start(msgs.start);
-  const manifests = parsedFiles.pipe(
-    mergeMap((file) => file.getManifests(priority))
-  );
   const { length: mainifestCount } = await manifests
     .pipe(
       mergeMap(async (manifest) => manifest.applyManifest(ctx), 5),
@@ -227,8 +254,10 @@ async function applyManifests(
   }
 }
 
-async function printLogs(parsedFiles: Observable<ManifestFile>) {
-  const manifests = parsedFiles.pipe(mergeMap((file) => file.manifests));
+async function printLogs(groups: ManifestImportGroup[]) {
+  const manifests = of(...groups).pipe(
+    mergeMap((group) => group.getFetchedManifests())
+  );
   const successStates = [
     ManifestState.UNKNOWN_SUCCESS_RESPONSE,
     ManifestState.FAILED_TO_WRITE_TO_FILE,
@@ -242,8 +271,7 @@ async function printLogs(parsedFiles: Observable<ManifestFile>) {
         const subTree = cli.tree();
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
-        const fileName = manifest.file.file.fileName;
-        successTree.insert(`${kind} ${name} created (${fileName})`, subTree);
+        successTree.insert(`${kind} ${name} created`, subTree);
         if (manifest.state === ManifestState.UNKNOWN_SUCCESS_RESPONSE) {
           subTree.insert(chalk.yellow('Unknown server response'));
         }
@@ -268,8 +296,7 @@ async function printLogs(parsedFiles: Observable<ManifestFile>) {
         const subTree = cli.tree();
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
-        const fileName = manifest.file.file.fileName;
-        errorTree.insert(`${kind} ${name} (${fileName})`, subTree);
+        errorTree.insert(`${kind} ${name}`, subTree);
         if (manifest.errorMsg) {
           subTree.insert(chalk.red(manifest.errorMsg));
         }
@@ -291,8 +318,7 @@ async function printLogs(parsedFiles: Observable<ManifestFile>) {
         const subTree = cli.tree();
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
-        const fileName = manifest.file.file.fileName;
-        skippedTree.insert(`${kind} ${name} (${fileName})`, subTree);
+        skippedTree.insert(`${kind} ${name}`, subTree);
       }),
       count(),
       tap((count) => {
