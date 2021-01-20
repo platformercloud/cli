@@ -19,10 +19,7 @@ import {
 import ValidationError from '../modules/errors/validation-error';
 import { createOutputPath } from '../modules/gitops/fs';
 import { ManifestImportGroup } from '../modules/gitops/manifest-group';
-import {
-  importTypes,
-  manifestImportPriorities,
-} from '../modules/gitops/manifest-import-types';
+import { importTypes } from '../modules/gitops/manifest-import-types';
 import {
   ManifestFileObject,
   ManifestObject,
@@ -110,10 +107,9 @@ export default class Apply extends Command {
     const clusterId = cluster.id;
     await createOutputPath(envId);
     const ctx = { orgId, projectId, clusterId, namespace };
-    const importGroups = manifestImportPriorities.map((priority) => {
-      const group = importTypes[priority];
-      return new ManifestImportGroup(group, ctx);
-    });
+    const importGroups = importTypes.map(
+      (importType) => new ManifestImportGroup(importType, ctx)
+    );
     try {
       try {
         await of(...importGroups)

@@ -10,7 +10,7 @@ import {
   tap,
 } from 'rxjs/operators';
 import { queryResource } from '../cluster/api';
-import { ImportTypes, ResourceType } from './manifest-import-types';
+import { ImportType, ResourceType } from './manifest-import-types';
 import { ManifestObject, skippedStateNotifier } from './manifest-object';
 import { K8sObject } from './parser';
 
@@ -22,13 +22,10 @@ interface ResourceQuery {
 }
 
 export class ManifestImportGroup {
-  resourceTypes: ImportTypes[keyof ImportTypes];
+  resourceTypes: ImportType;
   #manifests: ManifestObject[] = [];
   #observable: Observable<ManifestObject>;
-  constructor(
-    resourceTypes: ImportTypes[keyof ImportTypes],
-    query: ResourceQuery
-  ) {
+  constructor(resourceTypes: ImportType, query: ResourceQuery) {
     this.resourceTypes = resourceTypes;
     this.#observable = of(...this.resourceTypes.types).pipe(
       mergeMap((r) => fetchResourcesOfType(query, r), 4),
