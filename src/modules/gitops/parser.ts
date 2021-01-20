@@ -13,6 +13,7 @@ export interface K8sObject {
   kind: string;
   metadata: {
     name: string;
+    namespace?: string;
     [key: string]: any;
   };
   ownerReferences?: null | Array<OwnerReference>;

@@ -11,7 +11,11 @@ import {
 } from 'rxjs/operators';
 import { queryResource } from '../cluster/api';
 import { ImportType, ResourceType } from './manifest-import-types';
-import { ManifestObject, skippedStateNotifier } from './manifest-object';
+import {
+  ManifestObject,
+  modifyTargetNS,
+  skippedStateNotifier,
+} from './manifest-object';
 import { K8sObject } from './parser';
 
 interface ResourceQuery {
@@ -25,7 +29,11 @@ export class ManifestImportGroup {
   resourceTypes: ImportType;
   #manifests: ManifestObject[] = [];
   #observable: Observable<ManifestObject>;
-  constructor(resourceTypes: ImportType, query: ResourceQuery) {
+  constructor(
+    resourceTypes: ImportType,
+    query: ResourceQuery,
+    targetNS?: string
+  ) {
     this.resourceTypes = resourceTypes;
     this.#observable = of(...this.resourceTypes.types).pipe(
       mergeMap((r) => fetchResourcesOfType(query, r), 4),
@@ -33,7 +41,7 @@ export class ManifestImportGroup {
       map((v) => v.payload),
       mergeAll(),
       filter(shouldImport),
-      map((v) => new ManifestObject(v)),
+      map((v) => new ManifestObject(modifyTargetNS(v, targetNS))),
       tap((v) => this.#manifests.push(v)),
       shareReplay()
     );

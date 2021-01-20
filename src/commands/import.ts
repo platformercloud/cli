@@ -75,6 +75,12 @@ export default class Apply extends Command {
       required: true,
       multiple: false,
     }),
+    'target-ns': flags.string({
+      char: 'T',
+      description: 'Target namespace',
+      required: false,
+      multiple: false,
+    }),
   };
 
   static args = [];

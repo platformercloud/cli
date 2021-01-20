@@ -162,3 +162,13 @@ export class ManifestFileObject extends ManifestObject {
     this.file = file;
   }
 }
+
+export function modifyTargetNS(manifest: K8sObject, target?: string) {
+  if (!target) return manifest;
+  if (manifest.kind === 'Namespace') {
+    manifest.metadata.name = target;
+  } else {
+    manifest.metadata.namespace = target;
+  }
+  return manifest;
+}
