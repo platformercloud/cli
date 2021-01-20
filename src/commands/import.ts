@@ -29,6 +29,7 @@ import {
 import { writeHAR } from '../modules/util/fetch';
 import { tryValidateCommonFlags } from '../modules/util/validations';
 import chalk = require('chalk');
+import { ensureTargetNamespace } from '../modules/apps/environment';
 
 export default class Apply extends Command {
   static description =
@@ -103,18 +104,28 @@ export default class Apply extends Command {
     });
     const { orgId, projectId, envId } = context as Required<typeof context>;
     const clusterName = flags['cluster'];
-    const namespace = flags['namespace'];
+    const sourceNS = flags['namespace'];
     const { cluster } = await validateClusterNamespace({
       orgId,
       projectId,
       clusterName,
-      namespace,
+      namespace: sourceNS,
     });
+    const targetNS = flags['target-ns'];
+    cli.log(`Target namespace [${targetNS || sourceNS}]`);
+    if (targetNS) {
+      await ensureTargetNamespace({ orgId, projectId, envId, name: targetNS });
+    }
     const clusterId = cluster.id;
     await createOutputPath(envId);
-    const ctx = { orgId, projectId, clusterId, namespace };
-    const importGroups = importTypes.map(
-      (importType) => new ManifestImportGroup(importType, ctx)
+    const ctx = { orgId, projectId, clusterId, namespace: sourceNS };
+    // apply source namespace if target is not provided
+    const typesToImport = targetNS
+      ? importTypes.filter((f) => !f.skipIfTargetProvided)
+      : importTypes;
+    const importGroups = typesToImport.map(
+      (importType) =>
+        new ManifestImportGroup(importType, ctx, sourceNS, targetNS)
     );
     try {
       try {
@@ -157,7 +168,7 @@ export default class Apply extends Command {
       const manifestCount = statusArr.length;
       if (manifestCount === 0) {
         this.error(
-          `No supported manifests were found in the namespace ${namespace}`,
+          `No supported manifests were found in the namespace ${sourceNS}`,
           { exit: 1 }
         );
       }

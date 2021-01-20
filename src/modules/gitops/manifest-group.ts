@@ -32,6 +32,7 @@ export class ManifestImportGroup {
   constructor(
     resourceTypes: ImportType,
     query: ResourceQuery,
+    sourceNS: string,
     targetNS?: string
   ) {
     this.resourceTypes = resourceTypes;
@@ -40,7 +41,7 @@ export class ManifestImportGroup {
       takeUntil(skippedStateNotifier),
       map((v) => v.payload),
       mergeAll(),
-      filter(shouldImport),
+      filter((v) => shouldImport(v, sourceNS)),
       map((v) => new ManifestObject(modifyTargetNS(v, targetNS))),
       tap((v) => this.#manifests.push(v)),
       shareReplay()
@@ -54,7 +55,10 @@ export class ManifestImportGroup {
   }
 }
 
-function shouldImport(v: K8sObject) {
+function shouldImport(v: K8sObject, sourceNS: string) {
+  if (v.kind === 'Namespace') {
+    return v.metadata.name === sourceNS;
+  }
   const isJobWithCronJobOwner =
     v.kind === 'Job' &&
     v.ownerReferences?.some((ref) => ref.kind === 'CronJob');

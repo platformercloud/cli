@@ -1,10 +1,9 @@
-type ManifestImportPriorities = number;
-
 export interface ResourceType {
   kind: string;
   apiVersion: string;
 }
 export type ImportType = {
+  skipIfTargetProvided?: boolean;
   priority: number;
   description: string;
   types: Array<ResourceType>;
@@ -12,6 +11,7 @@ export type ImportType = {
 const importTypes: Array<ImportType> = [
   {
     priority: 0,
+    skipIfTargetProvided: true,
     description: 'namespace',
     types: [{ kind: 'Namespace', apiVersion: 'v1' }],
   },
