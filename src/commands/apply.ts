@@ -14,6 +14,7 @@ import {
   toArray,
 } from 'rxjs/operators';
 import Command from '../base-command';
+import { ensureTargetNamespace } from '../modules/apps/environment';
 import {
   getDefaultEnvironment,
   getDefaultOrganization,
@@ -21,6 +22,10 @@ import {
 } from '../modules/config/helpers';
 import { createOutputPath, validateManifestPath } from '../modules/gitops/fs';
 import { ManifestFile } from '../modules/gitops/manifest-file';
+import {
+  getKindToPriorityMap,
+  importTypes,
+} from '../modules/gitops/manifest-import-types';
 import {
   ManifestFileObject,
   ManifestState,
@@ -64,6 +69,12 @@ export default class Apply extends Command {
       multiple: false,
       default: () => getDefaultEnvironment()?.name,
     }),
+    'target-ns': flags.string({
+      char: 'T',
+      description: 'Target namespace',
+      required: false,
+      multiple: false,
+    }),
   };
 
   static args = [
@@ -92,10 +103,21 @@ export default class Apply extends Command {
     });
     const ctx = context as Required<typeof context>;
     const fileFolderPath = args.filepath;
+    const targetNS = flags['target-ns'];
+    const { orgId, projectId, envId } = ctx;
+    if (targetNS) {
+      cli.log(`Target namespace [${targetNS}]`);
+      await ensureTargetNamespace({ orgId, projectId, envId, name: targetNS });
+    }
+    const { priorities, priorityMap, importTypeMap } = getKindToPriorityMap(
+      importTypes
+    );
     try {
       const { files, isDir } = await validateManifestPath(fileFolderPath);
       await createOutputPath(ctx.envId);
-      const manifestFileArr = files.map((file) => new ManifestFile(file));
+      const manifestFileArr = files.map(
+        (file) => new ManifestFile(file, priorityMap, targetNS)
+      );
       const parsedFiles = from(manifestFileArr).pipe(
         map((f) => defer(() => f.parseFile())),
         mergeAll(5),
@@ -105,15 +127,16 @@ export default class Apply extends Command {
         shareReplay()
       );
       try {
-        // step1: apply configmaps & secrets
-        await applyManifests(parsedFiles, ctx, 1, {
-          start: 'Applying configurations',
-        });
-        // step2: apply deployments and jobs
-        await applyManifests(parsedFiles, ctx, 2, {
-          start: 'Applying deployments',
-        });
-        // step3: apply other manifests
+        // apply manifests ordered by priority
+        // ignore namespaces if target ns provided
+        for (const priority of priorities) {
+          if (importTypes[priority].skipIfTargetProvided && targetNS) continue;
+          const description = importTypeMap.get(priority)?.description;
+          await applyManifests(parsedFiles, ctx, priority, {
+            start: `Applying ${description}`,
+          });
+        }
+        // apply all kinds not specified in priority map
         await applyManifests(parsedFiles, ctx, null, {
           start: 'Applying other manifests',
         });
@@ -160,7 +183,7 @@ export default class Apply extends Command {
 async function applyManifests(
   parsedFiles: Observable<ManifestFile>,
   ctx: Record<'orgId' | 'projectId' | 'envId', string>,
-  priority: 1 | 2 | null,
+  priority: number | null,
   msgs: Record<'start', string>
 ) {
   cli.action.start(msgs.start);

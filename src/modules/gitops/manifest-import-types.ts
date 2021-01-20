@@ -39,7 +39,7 @@ const importTypes: Array<ImportType> = [
   },
   {
     priority: 3,
-    description: 'other manifests',
+    description: 'services',
     types: [
       { kind: 'Service', apiVersion: 'v1' },
       { kind: 'Ingress', apiVersion: 'extensions/v1beta1' },
@@ -48,3 +48,18 @@ const importTypes: Array<ImportType> = [
 ];
 
 export { importTypes };
+
+export type KindPriorityMap = Map<string, number>;
+
+export function getKindToPriorityMap(importTypes: ImportType[]) {
+  const priorityMap: KindPriorityMap = new Map();
+  const importTypeMap = new Map<number, ImportType>();
+  importTypes.forEach((group) => {
+    importTypeMap.set(group.priority, group);
+    group.types.forEach((type) => {
+      priorityMap.set(type.kind, group.priority);
+    });
+  });
+  const priorities = [...importTypeMap.keys()].sort();
+  return { priorityMap, importTypeMap, priorities };
+}
