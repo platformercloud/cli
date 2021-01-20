@@ -1,4 +1,3 @@
-import { cli } from 'cli-ux';
 import * as fs from 'fs';
 import * as path from 'path';
 import { K8sObject } from './parser';
