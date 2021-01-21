@@ -1,7 +1,7 @@
 {
   "name": "platformer-cli",
   "description": "Command Line Interface for the Platformer Console",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "author": "binura.g@platformer.com, chamod.p@platformer.com",
   "bin": {
     "platformer": "./bin/run"
@@ -96,7 +96,7 @@
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "watch": "tsc -w",
-    "preversion": "yarn run test && oclif-dev readme && git add README.md"
+    "preversion": "oclif-dev readme && git add README.md"
   },
   "types": "lib/index.d.ts"
 }
