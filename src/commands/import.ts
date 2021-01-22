@@ -33,7 +33,7 @@ import { ensureTargetNamespace } from '../modules/apps/environment';
 
 export default class Apply extends Command {
   static description =
-    'Create resources in Platformer Console using a Kubernetes YAMLs';
+    'Import resources from existing namespace in a Kubernetes Cluster';
 
   static flags = {
     help: flags.help({ char: 'h' }),
