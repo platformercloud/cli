@@ -59,10 +59,13 @@ function shouldImport(v: K8sObject, sourceNS: string) {
   if (v.kind === 'Namespace') {
     return v.metadata.name === sourceNS;
   }
-  const isJobWithCronJobOwner =
-    v.kind === 'Job' &&
-    v.ownerReferences?.some((ref) => ref.kind === 'CronJob');
-  return !isJobWithCronJobOwner;
+  if (v.kind === 'Secret') {
+    return v.type === 'Opaque';
+  }
+  if (v.kind === 'Job') {
+    return !v.ownerReferences?.some((ref) => ref.kind === 'CronJob');
+  }
+  return true;
 }
 
 function fetchResourcesOfType(query: ResourceQuery, r: ResourceType) {

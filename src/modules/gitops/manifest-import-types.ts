@@ -21,7 +21,6 @@ const importTypes: Array<ImportType> = [
     types: [
       { kind: 'Secret', apiVersion: 'v1' },
       { kind: 'ConfigMap', apiVersion: 'v1' },
-      { kind: 'PersistentVolume', apiVersion: 'v1' },
       { kind: 'PersistentVolumeClaim', apiVersion: 'v1' },
     ],
   },
