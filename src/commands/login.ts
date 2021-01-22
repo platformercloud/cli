@@ -5,7 +5,7 @@ import config from '../modules/config';
 import cli from 'cli-ux';
 import * as chalk from 'chalk';
 
-const consoleURL = 'https://console.dev.x.platformer.com';
+const consoleURL = 'https://beta.console.platformer.com';
 const port = 9999;
 
 export default class Login extends Command {
