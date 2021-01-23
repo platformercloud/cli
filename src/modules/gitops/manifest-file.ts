@@ -1,6 +1,6 @@
 import { FileInfo } from './fs';
 import { KindPriorityMap } from './manifest-import-types';
-import { ManifestFileObject, modifyTargetNS } from './manifest-object';
+import { ManifestFileObject, modifyYAML } from './manifest-object';
 import { parseK8sManifestsFromFile } from './parser';
 
 export class ManifestFile {
@@ -39,7 +39,7 @@ export class ManifestFile {
         ? sorted.filter((m) => m.kind !== 'Namespace')
         : sorted;
       this.#manifests = filtered.map(
-        (m) => new ManifestFileObject(modifyTargetNS(m, this.#targetNS), this)
+        (m) => new ManifestFileObject(modifyYAML(m, this.#targetNS), this)
       );
     } catch (error) {}
     return this;

@@ -163,12 +163,30 @@ export class ManifestFileObject extends ManifestObject {
   }
 }
 
-export function modifyTargetNS(manifest: K8sObject, target?: string) {
+const metadataToDelete = [
+  'selfLink',
+  'uid',
+  'resourceVersion',
+  'generation',
+  'creationTimestamp',
+];
+const annotationsToDelete = [
+  'kubectl.kubernetes.io/last-applied-configuration',
+];
+
+export function modifyYAML(manifest: K8sObject, target?: string) {
   if (!target) return manifest;
   if (manifest.kind === 'Namespace') {
     manifest.metadata.name = target;
   } else {
     manifest.metadata.namespace = target;
   }
+  delete manifest['status'];
+  metadataToDelete.forEach((key) => {
+    delete manifest.metadata[key];
+  });
+  annotationsToDelete.forEach((key) => {
+    delete manifest.metadata.annotations?.[key];
+  });
   return manifest;
 }

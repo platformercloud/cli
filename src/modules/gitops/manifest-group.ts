@@ -13,7 +13,7 @@ import { queryResource } from '../cluster/api';
 import { ImportType, ResourceType } from './manifest-import-types';
 import {
   ManifestObject,
-  modifyTargetNS,
+  modifyYAML,
   skippedStateNotifier,
 } from './manifest-object';
 import { K8sObject } from './parser';
@@ -42,7 +42,7 @@ export class ManifestImportGroup {
       map((v) => v.payload),
       mergeAll(),
       filter((v) => shouldImport(v, sourceNS)),
-      map((v) => new ManifestObject(modifyTargetNS(v, targetNS))),
+      map((v) => new ManifestObject(modifyYAML(v, targetNS))),
       tap((v) => this.#manifests.push(v)),
       shareReplay()
     );

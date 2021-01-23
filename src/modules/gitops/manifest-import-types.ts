@@ -17,7 +17,7 @@ const importTypes: Array<ImportType> = [
   },
   {
     priority: 1,
-    description: 'configuration',
+    description: 'configurations',
     types: [
       { kind: 'Secret', apiVersion: 'v1' },
       { kind: 'ConfigMap', apiVersion: 'v1' },

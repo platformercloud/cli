@@ -15,6 +15,8 @@ export interface K8sObject {
     name: string;
     namespace?: string;
     [key: string]: any;
+    labels?: Record<string, string> | null;
+    annotations?: Record<string, string> | null;
   };
   ownerReferences?: null | Array<OwnerReference>;
   [key: string]: any;
