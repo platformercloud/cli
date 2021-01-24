@@ -13,4 +13,11 @@ export default class APIError extends Error {
   get statusCode() {
     return this.response.status;
   }
+  async data() {
+    try {
+      return await this.response.json();
+    } catch (error) {
+      return null;
+    }
+  }
 }

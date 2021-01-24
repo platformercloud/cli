@@ -1,5 +1,6 @@
-import { defer, Observable, of } from 'rxjs';
+import { defer, EMPTY, Observable, of } from 'rxjs';
 import {
+  catchError,
   filter,
   map,
   mergeAll,
@@ -9,7 +10,8 @@ import {
   takeUntil,
   tap,
 } from 'rxjs/operators';
-import { queryResource } from '../cluster/api';
+import { ClusterResources, queryResource } from '../cluster/api';
+import APIError from '../errors/api-error';
 import { ImportType, ResourceType } from './manifest-import-types';
 import {
   ManifestObject,
@@ -28,6 +30,7 @@ interface ResourceQuery {
 export class ManifestImportGroup {
   resourceTypes: ImportType;
   #manifests: ManifestObject[] = [];
+  fetchFailures: YamlFectchFailure[] = [];
   #observable: Observable<ManifestObject>;
   constructor(
     resourceTypes: ImportType,
@@ -38,6 +41,13 @@ export class ManifestImportGroup {
     this.resourceTypes = resourceTypes;
     this.#observable = of(...this.resourceTypes.types).pipe(
       mergeMap((r) => fetchResourcesOfType(query, r), 4),
+      filter((v): v is ClusterResources => {
+        if (v instanceof YamlFectchFailure) {
+          this.fetchFailures.push(v);
+          return false;
+        }
+        return true;
+      }),
       takeUntil(skippedStateNotifier),
       map((v) => v.payload),
       mergeAll(),
@@ -70,16 +80,65 @@ function shouldImport(v: K8sObject, sourceNS: string) {
 
 function fetchResourcesOfType(query: ResourceQuery, r: ResourceType) {
   const { orgId, projectId, clusterId, namespace } = query;
-  return defer(() =>
-    queryResource(
-      {
-        orgId,
-        projectId,
-        clusterId,
-        apiVersion: r.apiVersion,
-        kind: r.kind,
-      },
-      { namespace }
-    )
-  ).pipe(retry(2));
+  return defer(async () => {
+    try {
+      const res = await queryResource(
+        {
+          orgId,
+          projectId,
+          clusterId,
+          apiVersion: r.apiVersion,
+          kind: r.kind,
+        },
+        { namespace }
+      );
+      return res;
+    } catch (err) {
+      const data = err instanceof APIError ? await err.data() : null;
+      const cause = isClusterResourcesFailure(data) ? data.error : null;
+      throw new YamlFectchFailure(r, query, cause);
+    }
+  }).pipe(
+    retry(2),
+    catchError(async (err) => {
+      if (err instanceof YamlFectchFailure) return err;
+      return EMPTY;
+    })
+  );
+}
+
+export class YamlFectchFailure extends Error {
+  readonly resourceType: ResourceType;
+  readonly resourceQuery: ResourceQuery;
+  readonly cause: string | null;
+  constructor(
+    resourceType: ResourceType,
+    resourceQuery: ResourceQuery,
+    cause: string | null
+  ) {
+    super(
+      `Failed to fetch resources of kind : ${resourceType.kind} (${resourceType.apiVersion})`
+    );
+    this.cause = cause;
+    this.resourceType = resourceType;
+    this.resourceQuery = resourceQuery;
+  }
+}
+
+export interface ClusterResourcesFailure {
+  clusterID: string;
+  error: string;
+  identifier: 'resource:get';
+  requestID: string;
+  status: 'fail';
+  type: 'query';
+}
+export function isClusterResourcesFailure(
+  data: any
+): data is ClusterResourcesFailure {
+  if (typeof data !== 'object' || data === null) return false;
+  if (!['status', 'error'].every((prop) => typeof data[prop] === 'string')) {
+    return false;
+  }
+  return data['status'] === 'fail';
 }

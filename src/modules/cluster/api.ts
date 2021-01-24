@@ -96,11 +96,10 @@ interface ClusterResourceQuery {
   apiVersion: string;
   kind: string;
 }
-interface ClusterResources {
+export interface ClusterResources {
   clusterID: string;
   payload: K8sObject[];
 }
-
 /**
  * Query any resource on the Cluster
  * Tip: use kubectl api-versions and kubectl api-resources to figure out the exact

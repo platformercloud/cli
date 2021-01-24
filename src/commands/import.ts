@@ -1,15 +1,9 @@
 import { flags } from '@oclif/command';
 import { cli } from 'cli-ux';
 import { Observable, of } from 'rxjs';
-import {
-  concatMap,
-  count,
-  filter,
-  mergeMap,
-  tap,
-  toArray,
-} from 'rxjs/operators';
+import { count, filter, mergeMap, tap, toArray } from 'rxjs/operators';
 import Command from '../base-command';
+import { ensureTargetNamespace } from '../modules/apps/environment';
 import { getClusterNamespaces, listClusters } from '../modules/cluster/api';
 import {
   getDefaultEnvironment,
@@ -29,7 +23,6 @@ import {
 import { writeHAR } from '../modules/util/fetch';
 import { tryValidateCommonFlags } from '../modules/util/validations';
 import chalk = require('chalk');
-import { ensureTargetNamespace } from '../modules/apps/environment';
 
 export default class Apply extends Command {
   static description =
@@ -129,20 +122,18 @@ export default class Apply extends Command {
     );
     try {
       try {
-        await of(...importGroups)
-          .pipe(
-            concatMap((group) => {
-              const manifestOfGroup = group.getManifests();
-              return applyManifests(
-                manifestOfGroup,
-                { orgId, projectId, envId },
-                {
-                  start: `Applying ${group.resourceTypes.description}`,
-                }
-              );
-            })
-          )
-          .toPromise();
+        for (const group of importGroups) {
+          const manifestOfGroup = group.getManifests();
+          await applyManifests(
+            manifestOfGroup,
+            { orgId, projectId, envId },
+            {
+              start: `Applying ${group.resourceTypes.description}`,
+            }
+          );
+          // if no apply failures occured, show warnings for fetch failures
+          displayFetchFailures(group);
+        }
       } catch (error) {
         // if error occurs, append msg to the running spinner
         cli.action.stop('Error occured');
@@ -315,10 +306,9 @@ async function printLogs(groups: ManifestImportGroup[]) {
     .pipe(
       filter((m) => m.state === ManifestState.SKIPPED),
       tap((manifest) => {
-        const subTree = cli.tree();
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
-        skippedTree.insert(`${kind} ${name}`, subTree);
+        skippedTree.insert(`${kind} ${name}`);
       }),
       count(),
       tap((count) => {
@@ -329,6 +319,19 @@ async function printLogs(groups: ManifestImportGroup[]) {
       })
     )
     .toPromise();
+}
+
+async function displayFetchFailures(group: ManifestImportGroup) {
+  if (group.fetchFailures.length === 0) return;
+  const tree = cli.tree();
+  group.fetchFailures.forEach((failure) => {
+    const subTree = cli.tree();
+    tree.insert(chalk.yellow(`${failure.message}`), subTree);
+    if (failure.cause) {
+      subTree.insert(failure.cause);
+    }
+  });
+  tree.display();
 }
 
 function printSummary(statusArr: ManifestState[]) {
