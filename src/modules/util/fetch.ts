@@ -4,9 +4,11 @@ import nodeFetch from 'node-fetch';
 import { homedir } from 'os';
 // @ts-ignore
 import { createHarLog, withHar } from 'node-fetch-har';
+import { cli } from 'cli-ux';
 
 const homeDir = homedir();
-const LOG_REQUESTS = false;
+const LOG_REQUESTS =
+  process.env.DEBUG === '*' || process.env.DEBUG === 'REQUESTS';
 
 export const { fetch, writeHAR } = (function () {
   if (!LOG_REQUESTS)
@@ -20,10 +22,21 @@ export const { fetch, writeHAR } = (function () {
   const fetch = withHar(nodeFetch, {
     onHarEntry: (entry: any) => har.push(entry),
   });
-
   function writeHAR(fileName = `har-${new Date().toISOString()}.har`) {
-    const filePath = path.join(homeDir, 'logs', fileName);
-    fs.writeFileSync(filePath, JSON.stringify(createHarLog(har), null, 2));
+    writeToHAR(fileName, har);
   }
   return { fetch, writeHAR };
 })();
+
+function writeToHAR(fileName: string, logs: any[]) {
+  const folderPath = path.join(homeDir, 'platformer-logs');
+  const filePath = path.join(folderPath, fileName);
+  try {
+    fs.mkdirSync(folderPath, { recursive: true });
+  } catch (error) {}
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(createHarLog(logs), null, 2));
+  } catch (error) {
+    cli.error(`Failed to write to ${filePath}`);
+  }
+}
