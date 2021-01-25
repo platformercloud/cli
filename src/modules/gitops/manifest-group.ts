@@ -1,7 +1,6 @@
-import { defer, EMPTY, Observable, of } from 'rxjs';
+import { defer, EMPTY, Observable, of, timer } from 'rxjs';
 import {
   catchError,
-  delay,
   filter,
   map,
   mergeAll,
@@ -102,13 +101,12 @@ function fetchResourcesOfType(query: ResourceQuery, r: ResourceType) {
   }).pipe(
     retryWhen((errors) =>
       errors.pipe(
-        delay(1000),
         mergeMap((v, i) => {
           // error msg available, no need to retry
           if (v instanceof YamlFectchFailure && v.cause) throw v;
-          // allow 2 retries
-          if (i >= 2) throw v;
-          return of(null);
+          // allow 2 retries, retry in 1s
+          if (i > 1) throw v;
+          return timer(1000);
         })
       )
     ),
