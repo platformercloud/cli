@@ -1,11 +1,11 @@
-import { defer, EMPTY, Observable, of } from 'rxjs';
+import { defer, EMPTY, Observable, of, timer } from 'rxjs';
 import {
   catchError,
   filter,
   map,
   mergeAll,
   mergeMap,
-  retry,
+  retryWhen,
   shareReplay,
   takeUntil,
   tap,
@@ -99,7 +99,17 @@ function fetchResourcesOfType(query: ResourceQuery, r: ResourceType) {
       throw new YamlFectchFailure(r, query, cause);
     }
   }).pipe(
-    retry(2),
+    retryWhen((errors) =>
+      errors.pipe(
+        mergeMap((v, i) => {
+          // error msg available, no need to retry
+          if (v instanceof YamlFectchFailure && v.cause) throw v;
+          // allow 2 retries, retry in 1s
+          if (i > 1) throw v;
+          return timer(1000);
+        })
+      )
+    ),
     catchError(async (err) => {
       if (err instanceof YamlFectchFailure) return err;
       return EMPTY;

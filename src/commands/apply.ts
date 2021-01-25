@@ -243,7 +243,7 @@ async function printLogs(parsedFiles: Observable<ManifestFile>) {
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
         const fileName = manifest.file.file.fileName;
-        successTree.insert(`${kind} ${name} created (${fileName})`, subTree);
+        successTree.insert(`${kind} ${name} applied (${fileName})`, subTree);
         if (manifest.state === ManifestState.UNKNOWN_SUCCESS_RESPONSE) {
           subTree.insert(chalk.yellow('Unknown server response'));
         }
@@ -255,7 +255,7 @@ async function printLogs(parsedFiles: Observable<ManifestFile>) {
       tap((count) => {
         if (count === 0) return;
         cli.log('');
-        cli.log(chalk.green('Created resources'));
+        cli.log(chalk.green('Applied resources'));
         successTree.display();
       })
     )

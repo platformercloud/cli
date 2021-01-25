@@ -123,9 +123,9 @@ export default class Apply extends Command {
     try {
       try {
         for (const group of importGroups) {
-          const manifestOfGroup = group.getManifests();
+          const manifestsOfGroup = group.getManifests();
           await applyManifests(
-            manifestOfGroup,
+            manifestsOfGroup,
             { orgId, projectId, envId },
             {
               start: `Applying ${group.resourceTypes.description}`,
@@ -262,7 +262,7 @@ async function printLogs(groups: ManifestImportGroup[]) {
         const subTree = cli.tree();
         const kind = manifest.manifest.kind;
         const name = manifest.manifest.metadata.name;
-        successTree.insert(`${kind} ${name} created`, subTree);
+        successTree.insert(`${kind} ${name} applied`, subTree);
         if (manifest.state === ManifestState.UNKNOWN_SUCCESS_RESPONSE) {
           subTree.insert(chalk.yellow('Unknown server response'));
         }
@@ -274,7 +274,7 @@ async function printLogs(groups: ManifestImportGroup[]) {
       tap((count) => {
         if (count === 0) return;
         cli.log('');
-        cli.log(chalk.green('Created resources'));
+        cli.log(chalk.green('Applied resources'));
         successTree.display();
       })
     )
