@@ -32,7 +32,6 @@ const importTypes: Array<ImportType> = [
       { kind: 'Deployment', apiVersion: 'extensions/v1beta1' },
       { kind: 'StatefulSet', apiVersion: 'apps/v1' },
       { kind: 'DaemonSet', apiVersion: 'apps/v1' },
-      { kind: 'Job', apiVersion: 'batch/v1' },
       { kind: 'CronJob', apiVersion: 'batch/v1' },
       { kind: 'CronJob', apiVersion: 'batch/v1beta1' },
     ],
