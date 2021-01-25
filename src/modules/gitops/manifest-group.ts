@@ -1,4 +1,4 @@
-import { defer, EMPTY, Observable, of, timer } from 'rxjs';
+import { defer, EMPTY, Observable, of } from 'rxjs';
 import {
   catchError,
   delay,
@@ -6,7 +6,6 @@ import {
   map,
   mergeAll,
   mergeMap,
-  retry,
   retryWhen,
   shareReplay,
   takeUntil,

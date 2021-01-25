@@ -91,7 +91,8 @@ export class ManifestObject {
         this.errorMsg = (error as Error).message;
         s.error(ManifestState.ERROR);
       }
-      throw error;
+      // return without throwing error, to allow other manifests to be applied
+      return;
     }
     s.next(ManifestState.WRITING_TO_FILE);
     try {
