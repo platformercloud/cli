@@ -4,8 +4,8 @@ import { fetchPermanentToken } from '../modules/auth/token';
 import config from '../modules/config';
 import cli from 'cli-ux';
 import * as chalk from 'chalk';
+import { getConsoleURL } from '../modules/config/helpers';
 
-const consoleURL = 'https://beta.console.platformer.com';
 const port = 9999;
 
 export default class Login extends Command {
@@ -13,6 +13,7 @@ export default class Login extends Command {
     'Log in to the CLI with your Platformer Account (logs into the current context)';
 
   async run() {
+    const consoleURL = getConsoleURL();
     const loginURL = new URL(`${consoleURL}/cli-login`);
     loginURL.searchParams.append('access_type', 'offline');
     loginURL.searchParams.append('redirect_uri', `http://localhost:${port}`);

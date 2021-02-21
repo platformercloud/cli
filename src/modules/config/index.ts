@@ -1,6 +1,7 @@
 import Conf from 'conf';
 
 export const defaultPlatformerAPIGateway = 'https://beta.api.platformer.com';
+export const defaultConsoleURL = 'https://beta.console.platformer.com';
 
 export interface Config {
   currentContext: string;
@@ -9,6 +10,7 @@ export interface Config {
 
 export interface Context {
   platformerAPIGateway: string;
+  platformerConsoleURL: string;
   auth?: {
     token?: string;
   };
@@ -33,6 +35,7 @@ if (!Boolean(initialConfigs) || Object.keys(initialConfigs).length === 0) {
     contexts: {
       default: {
         platformerAPIGateway: defaultPlatformerAPIGateway,
+        platformerConsoleURL: defaultConsoleURL,
       },
     },
   });

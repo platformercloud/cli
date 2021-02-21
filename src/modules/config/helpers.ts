@@ -1,4 +1,4 @@
-import config from '.';
+import config, { defaultConsoleURL } from '.';
 
 export function getAuthToken(): string {
   const currentContext: string = config.get('currentContext');
@@ -11,6 +11,13 @@ export function getAPIGateway(): string {
   if (typeof url !== 'string' || url === '') {
     throw new Error('Invalid API Gateway url');
   }
+  return url.endsWith('/') ? url.slice(0, -1) : url;
+}
+
+export function getConsoleURL(): string {
+  const currentContext: string = config.get('currentContext');
+  const url = config.get(`contexts.${currentContext}.platformerConsoleURL`);
+  if (typeof url !== 'string' || url === '') return defaultConsoleURL;
   return url.endsWith('/') ? url.slice(0, -1) : url;
 }
 
