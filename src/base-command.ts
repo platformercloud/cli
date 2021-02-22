@@ -2,6 +2,11 @@ import { Command as OCLIFCommand } from '@oclif/command';
 import config from './modules/config';
 import APIError from './modules/errors/api-error';
 import ValidationError from './modules/errors/validation-error';
+import {
+  reportWithScope,
+  waitForSentryCompletion,
+} from './modules/sentry/sentry';
+import { writeHAR } from './modules/util/fetch';
 
 export default abstract class Command extends OCLIFCommand {
   async init() {
@@ -28,11 +33,15 @@ export default abstract class Command extends OCLIFCommand {
         const e = error as ValidationError;
         return this.error(e.message, { exit: 1, ...e.oclifErrorOptions });
       }
-      default:
+      default: {
+        reportWithScope(error);
         return super.catch(error);
+      }
     }
   }
   async finally(_: Error | undefined) {
+    writeHAR();
+    await waitForSentryCompletion();
     // called after run and catch regardless of whether or not the command errored
     return super.finally(_);
   }

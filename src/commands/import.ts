@@ -20,7 +20,6 @@ import {
   ManifestState,
   skipRemainingManifests,
 } from '../modules/gitops/manifest-object';
-import { writeHAR } from '../modules/util/fetch';
 import { tryValidateCommonFlags } from '../modules/util/validations';
 import chalk = require('chalk');
 
@@ -168,8 +167,6 @@ export default class Apply extends Command {
     } catch (err) {
       cli.log(err);
       return this.error(err.message, { exit: 1 });
-    } finally {
-      writeHAR();
     }
   }
 }
