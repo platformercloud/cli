@@ -34,6 +34,7 @@ import {
 } from '../modules/gitops/manifest-object';
 import { tryValidateCommonFlags } from '../modules/util/validations';
 import chalk = require('chalk');
+import ValidationError from '../modules/errors/validation-error';
 
 export default class Apply extends Command {
   static description =
@@ -111,69 +112,64 @@ export default class Apply extends Command {
     const { priorities, priorityMap, importTypeMap } = getKindToPriorityMap(
       importTypes
     );
+
+    const { files, isDir } = await validateManifestPath(fileFolderPath);
+    await createOutputPath(ctx.envId);
+    const manifestFileArr = files.map(
+      (file) => new ManifestFile(file, priorityMap, targetNS)
+    );
+    const parsedFiles = from(manifestFileArr).pipe(
+      map((f) => defer(() => f.parseFile())),
+      mergeAll(5),
+      takeUntil(skippedStateNotifier),
+      catchError(() => of(null)),
+      filter((f): f is ManifestFile => f !== null),
+      shareReplay()
+    );
     try {
-      const { files, isDir } = await validateManifestPath(fileFolderPath);
-      await createOutputPath(ctx.envId);
-      const manifestFileArr = files.map(
-        (file) => new ManifestFile(file, priorityMap, targetNS)
-      );
-      const parsedFiles = from(manifestFileArr).pipe(
-        map((f) => defer(() => f.parseFile())),
-        mergeAll(5),
-        takeUntil(skippedStateNotifier),
-        catchError(() => of(null)),
-        filter((f): f is ManifestFile => f !== null),
-        shareReplay()
-      );
-      try {
-        // apply manifests ordered by priority
-        // ignore namespaces if target ns provided
-        for (const priority of priorities) {
-          if (importTypes[priority].skipIfTargetProvided && targetNS) continue;
-          const description = importTypeMap.get(priority)?.description;
-          await applyManifests(parsedFiles, ctx, priority, {
-            start: `Applying ${description}`,
-          });
-        }
-        // apply all kinds not specified in priority map
-        await applyManifests(parsedFiles, ctx, null, {
-          start: 'Applying other manifests',
+      // apply manifests ordered by priority
+      // ignore namespaces if target ns provided
+      for (const priority of priorities) {
+        if (importTypes[priority].skipIfTargetProvided && targetNS) continue;
+        const description = importTypeMap.get(priority)?.description;
+        await applyManifests(parsedFiles, ctx, priority, {
+          start: `Applying ${description}`,
         });
-      } catch (error) {
-        // if error occurs, append msg to the running spinner
-        cli.action.stop('Error occured');
-        cli.action.start('Waiting until other manifests complete');
-        skipRemainingManifests();
-        // wait till all running tasks are completed or thrown
-        await parsedFiles
-          .pipe(
-            mergeMap((file) => file.manifests),
-            mergeMap((manifest) => manifest.waitTillCompletion())
-          )
-          .toPromise();
-        cli.action.stop();
       }
-      const statusArr = await parsedFiles
+      // apply all kinds not specified in priority map
+      await applyManifests(parsedFiles, ctx, null, {
+        start: 'Applying other manifests',
+      });
+    } catch (error) {
+      // if error occurs, append msg to the running spinner
+      cli.action.stop('Error occured');
+      cli.action.start('Waiting until other manifests complete');
+      skipRemainingManifests();
+      // wait till all running tasks are completed or thrown
+      await parsedFiles
         .pipe(
-          mergeMap((file) => file.manifests.map((manifest) => manifest.state)),
-          toArray()
+          mergeMap((file) => file.manifests),
+          mergeMap((manifest) => manifest.waitTillCompletion())
         )
         .toPromise();
-      const manifestCount = statusArr.length;
-      if (manifestCount === 0) {
-        this.error(
-          `No valid manifests were found in the ${
-            isDir ? 'directory' : 'file'
-          }"${fileFolderPath}"`,
-          { exit: 1 }
-        );
-      }
-      await printLogs(parsedFiles);
-      printSummary(statusArr);
-    } catch (err) {
-      cli.log(err);
-      return this.error(err.message, { exit: 1 });
+      cli.action.stop();
     }
+    const statusArr = await parsedFiles
+      .pipe(
+        mergeMap((file) => file.manifests.map((manifest) => manifest.state)),
+        toArray()
+      )
+      .toPromise();
+    const manifestCount = statusArr.length;
+    if (manifestCount === 0) {
+      throw new ValidationError(
+        `No valid manifests were found in the ${
+          isDir ? 'directory' : 'file'
+        }"${fileFolderPath}"`
+      );
+    }
+    await printLogs(parsedFiles);
+    printSummary(statusArr);
   }
 }
 

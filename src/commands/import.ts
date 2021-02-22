@@ -119,55 +119,50 @@ export default class Apply extends Command {
       (importType) =>
         new ManifestImportGroup(importType, ctx, sourceNS, targetNS)
     );
+
     try {
-      try {
-        for (const group of importGroups) {
-          const manifestsOfGroup = group.getManifests();
-          await applyManifests(
-            manifestsOfGroup,
-            { orgId, projectId, envId },
-            {
-              start: `Applying ${group.resourceTypes.description}`,
-            }
-          );
-          // if no apply failures occured, show warnings for fetch failures
-          displayFetchFailures(group);
-        }
-      } catch (error) {
-        // if error occurs, append msg to the running spinner
-        cli.action.stop('Error occured');
-        cli.action.start('Waiting until other manifests complete');
-        skipRemainingManifests();
-        // wait till all running tasks are completed or thrown
-        await of(...importGroups)
-          .pipe(
-            mergeMap((group) => group.getFetchedManifests()),
-            mergeMap((manifest) => manifest.waitTillCompletion())
-          )
-          .toPromise();
-        cli.action.stop();
+      for (const group of importGroups) {
+        const manifestsOfGroup = group.getManifests();
+        await applyManifests(
+          manifestsOfGroup,
+          { orgId, projectId, envId },
+          {
+            start: `Applying ${group.resourceTypes.description}`,
+          }
+        );
+        // if no apply failures occured, show warnings for fetch failures
+        displayFetchFailures(group);
       }
-      const statusArr = await of(...importGroups)
+    } catch (error) {
+      // if error occurs, append msg to the running spinner
+      cli.action.stop('Error occured');
+      cli.action.start('Waiting until other manifests complete');
+      skipRemainingManifests();
+      // wait till all running tasks are completed or thrown
+      await of(...importGroups)
         .pipe(
-          mergeMap((group) =>
-            group.getFetchedManifests().map((manifest) => manifest.state)
-          ),
-          toArray()
+          mergeMap((group) => group.getFetchedManifests()),
+          mergeMap((manifest) => manifest.waitTillCompletion())
         )
         .toPromise();
-      const manifestCount = statusArr.length;
-      if (manifestCount === 0) {
-        this.error(
-          `No supported manifests were found in the namespace ${sourceNS}`,
-          { exit: 1 }
-        );
-      }
-      await printLogs(importGroups);
-      printSummary(statusArr);
-    } catch (err) {
-      cli.log(err);
-      return this.error(err.message, { exit: 1 });
+      cli.action.stop();
     }
+    const statusArr = await of(...importGroups)
+      .pipe(
+        mergeMap((group) =>
+          group.getFetchedManifests().map((manifest) => manifest.state)
+        ),
+        toArray()
+      )
+      .toPromise();
+    const manifestCount = statusArr.length;
+    if (manifestCount === 0) {
+      throw new ValidationError(
+        `No supported manifests were found in the namespace ${sourceNS}`
+      );
+    }
+    await printLogs(importGroups);
+    printSummary(statusArr);
   }
 }
 
