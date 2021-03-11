@@ -1,6 +1,7 @@
 import { flags } from '@oclif/command';
 import config, {
-  defaultPlatformerAPIGateway
+  defaultConsoleURL,
+  defaultPlatformerAPIGateway,
 } from '../../modules/config';
 import cli from 'cli-ux';
 import chalk = require('chalk');
@@ -10,20 +11,20 @@ export default class AddContext extends Command {
   static description = 'Add a new context';
 
   static flags = {
-    help: flags.help({ char: 'h' })
+    help: flags.help({ char: 'h' }),
   };
 
   static args = [
     {
       name: 'name',
       required: true,
-      description: 'Context name (must be unique)'
-    }
+      description: 'Context name (must be unique)',
+    },
   ];
 
   async run() {
     const {
-      args: { name: context }
+      args: { name: context },
     } = this.parse(AddContext);
     const contexts = config.get('contexts');
     if (
@@ -32,7 +33,7 @@ export default class AddContext extends Command {
       )
     ) {
       return this.error(`A context with the name "${context}" already exists`, {
-        exit: 1
+        exit: 1,
       });
     }
 
@@ -40,15 +41,20 @@ export default class AddContext extends Command {
     config.set(`contexts.${context}`, {});
 
     let gatewayURL = defaultPlatformerAPIGateway;
+    let consoleURL = defaultConsoleURL;
     const isDedicatedInstallation = await cli.confirm(
       'Is this context for a dedicated installation of Platformer Console? (y/n)'
     );
     if (isDedicatedInstallation) {
       gatewayURL = await cli.prompt('Enter the Platformer API Gateway URL', {
-        type: 'normal'
+        type: 'normal',
+      });
+      consoleURL = await cli.prompt('Enter the Platformer Console URL', {
+        type: 'normal',
       });
     }
     config.set(`contexts.${context}.platformerAPIGateway`, gatewayURL);
+    config.set(`contexts.${context}.platformerConsoleURL`, consoleURL);
 
     const setAsDefaultContext = await cli.confirm(
       'Would you like to set this context as your default context? (y/n)'
