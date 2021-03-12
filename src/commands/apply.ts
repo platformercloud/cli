@@ -27,6 +27,7 @@ import {
   importTypes,
 } from '../modules/gitops/manifest-import-types';
 import {
+  ManifestCtx,
   ManifestFileObject,
   ManifestState,
   skippedStateNotifier,
@@ -42,6 +43,7 @@ export default class Apply extends Command {
 
   static flags = {
     help: flags.help({ char: 'h' }),
+    save: flags.boolean(),
     all: flags.boolean({
       char: 'A',
       description: 'Log out of all contexts',
@@ -114,7 +116,9 @@ export default class Apply extends Command {
     );
 
     const { files, isDir } = await validateManifestPath(fileFolderPath);
-    await createOutputPath(ctx.envId);
+    if (flags.save) {
+      await createOutputPath(flags.environment);
+    }
     const manifestFileArr = files.map(
       (file) => new ManifestFile(file, priorityMap, targetNS)
     );
@@ -126,18 +130,23 @@ export default class Apply extends Command {
       filter((f): f is ManifestFile => f !== null),
       shareReplay()
     );
+    const manifestCtx: ManifestCtx = {
+      ...ctx,
+      envName: flags.environment,
+      saveOutput: flags.save,
+    };
     try {
       // apply manifests ordered by priority
       // ignore namespaces if target ns provided
       for (const priority of priorities) {
         if (importTypes[priority].skipIfTargetProvided && targetNS) continue;
         const description = importTypeMap.get(priority)?.description;
-        await applyManifests(parsedFiles, ctx, priority, {
+        await applyManifests(parsedFiles, manifestCtx, priority, {
           start: `Applying ${description}`,
         });
       }
       // apply all kinds not specified in priority map
-      await applyManifests(parsedFiles, ctx, null, {
+      await applyManifests(parsedFiles, manifestCtx, null, {
         start: 'Applying other manifests',
       });
     } catch (error) {
@@ -175,7 +184,7 @@ export default class Apply extends Command {
 
 async function applyManifests(
   parsedFiles: Observable<ManifestFile>,
-  ctx: Record<'orgId' | 'projectId' | 'envId', string>,
+  ctx: ManifestCtx,
   priority: number | null,
   msgs: Record<'start', string>
 ) {

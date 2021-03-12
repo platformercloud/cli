@@ -34,6 +34,11 @@ const inProgressStates = [
   ManifestState.WRITING_TO_FILE,
 ];
 
+export interface ManifestCtx
+  extends Record<'orgId' | 'projectId' | 'envId' | 'envName', string> {
+  saveOutput: boolean;
+}
+
 export class ManifestObject {
   readonly manifest: K8sObject;
   readonly subject: BehaviorSubject<ManifestState>;
@@ -55,13 +60,10 @@ export class ManifestObject {
       await this.subject.toPromise();
     } catch (error) {}
   }
-  async applyManifest(
-    ctx: Record<'orgId' | 'projectId' | 'envId', string>,
-    modifiedManifest?: K8sObject
-  ) {
+  async applyManifest(ctx: ManifestCtx, modifiedManifest?: K8sObject) {
     const s = this.subject;
     if (s.isStopped) return;
-    const { orgId, projectId, envId } = ctx;
+    const { orgId, projectId, envId, envName, saveOutput } = ctx;
     let res;
     s.next(ManifestState.APPLYING);
     try {
@@ -94,18 +96,20 @@ export class ManifestObject {
       // return without throwing error, to allow other manifests to be applied
       return;
     }
+    if (!saveOutput) {
+      s.next(ManifestState.COMPLETE);
+      return s.complete();
+    }
     s.next(ManifestState.WRITING_TO_FILE);
     try {
-      await writeManifestResult(res, this.manifest, envId);
+      await writeManifestResult(res, this.manifest, envName);
       s.next(ManifestState.COMPLETE);
       s.complete();
     } catch (error) {
       s.error(ManifestState.FAILED_TO_WRITE_TO_FILE);
     }
   }
-  async applyWithSelectedObject(
-    ctx: Record<'orgId' | 'projectId' | 'envId', string>
-  ) {
+  async applyWithSelectedObject(ctx: ManifestCtx) {
     const s = this.subject;
     if (s.isStopped || s.getValue() !== ManifestState.MULTIPLE_OBJECTS_FOUND) {
       throw new Error('Invalid state');

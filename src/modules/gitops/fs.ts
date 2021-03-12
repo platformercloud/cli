@@ -67,8 +67,8 @@ function getFileInfo(filePath: string, throwError: boolean): FileInfo | null {
   return { filepath: filePath, fileName, extension: ext as SupportedExtension };
 }
 
-export async function createOutputPath(envId: string) {
-  const outputPath = `platformer/${envId}`;
+export async function createOutputPath(envName: string) {
+  const outputPath = `platformer/${envName}`;
   try {
     return await fs.promises.mkdir(outputPath, { recursive: true });
   } catch (error) {}
@@ -79,11 +79,11 @@ let createdAppFolders: Set<string>;
 export async function writeManifestResult(
   data: Record<string, any>,
   manifest: K8sObject,
-  envId: string
+  envName: string
 ) {
   createdAppFolders = createdAppFolders ?? new Set<string>();
   const belongsToApp = !!manifest.metadata['app_environment_id'];
-  let outputPath = path.join('platformer', envId);
+  let outputPath = path.join('platformer', envName);
   if (belongsToApp) {
     const appName =
       manifest.metadata['platformer_app_name'] || manifest.metadata.name;
@@ -94,7 +94,7 @@ export async function writeManifestResult(
       } catch (error) {}
     }
   }
-  const fileName = `${manifest.kind}-${manifest.metadata.name}.yaml`;
+  const fileName = `${manifest.kind}-${manifest.metadata.name}.yaml`.toLowerCase();
   const filePath = path.join(outputPath, fileName);
   const str = JSON.stringify(data, null, 2);
   await fs.promises.writeFile(resolvePath(filePath), str);
