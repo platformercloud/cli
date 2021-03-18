@@ -12,6 +12,7 @@ export class ManifestFile {
     this.file = file;
     this.#targetNS = targetNS;
     this.#priorities = priorityMap;
+
   }
   get manifests() {
     return this.#manifests;
@@ -20,6 +21,7 @@ export class ManifestFile {
     const { filepath, extension } = this.file;
     try {
       const manifests = await parseK8sManifestsFromFile(filepath, extension);
+      
       const sorted = manifests.sort((a, b) => {
         const aPriority =
           this.#priorities.get(a.kind) ?? Number.MAX_SAFE_INTEGER;
