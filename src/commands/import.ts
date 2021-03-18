@@ -15,6 +15,7 @@ import { createOutputPath } from '../modules/gitops/fs';
 import { ManifestImportGroup } from '../modules/gitops/manifest-group';
 import { importTypes } from '../modules/gitops/manifest-import-types';
 import {
+  ManifestCtx,
   ManifestFileObject,
   ManifestObject,
   ManifestState,
@@ -29,6 +30,7 @@ export default class Apply extends Command {
 
   static flags = {
     help: flags.help({ char: 'h' }),
+    save: flags.boolean(),
     all: flags.boolean({
       char: 'A',
       description: 'Log out of all contexts',
@@ -109,7 +111,9 @@ export default class Apply extends Command {
       await ensureTargetNamespace({ orgId, projectId, envId, name: targetNS });
     }
     const clusterId = cluster.id;
-    await createOutputPath(envId);
+    if (flags.save) {
+      await createOutputPath(flags.environment);
+    }
     const ctx = { orgId, projectId, clusterId, namespace: sourceNS };
     // apply source namespace if target is not provided
     const typesToImport = targetNS
@@ -119,17 +123,19 @@ export default class Apply extends Command {
       (importType) =>
         new ManifestImportGroup(importType, ctx, sourceNS, targetNS)
     );
-
+    const manifestCtx: ManifestCtx = {
+      orgId,
+      projectId,
+      envId,
+      envName: flags.environment,
+      saveOutput: flags.save,
+    };
     try {
       for (const group of importGroups) {
         const manifestsOfGroup = group.getManifests();
-        await applyManifests(
-          manifestsOfGroup,
-          { orgId, projectId, envId },
-          {
-            start: `Applying ${group.resourceTypes.description}`,
-          }
-        );
+        await applyManifests(manifestsOfGroup, manifestCtx, {
+          start: `Applying ${group.resourceTypes.description}`,
+        });
         // if no apply failures occured, show warnings for fetch failures
         displayFetchFailures(group);
       }
@@ -196,7 +202,7 @@ async function validateClusterNamespace({
 
 async function applyManifests(
   manifests: Observable<ManifestObject>,
-  ctx: Record<'orgId' | 'projectId' | 'envId', string>,
+  ctx: ManifestCtx,
   msgs: Record<'start', string>
 ) {
   cli.action.start(msgs.start);
