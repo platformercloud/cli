@@ -23,7 +23,7 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/select/context.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/context.ts)_
+_See code: [src/commands/select/cxt.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/context.ts)_
 
 ## `platformer select:environment [ENVIRONMENT]`
 
@@ -51,7 +51,7 @@ EXAMPLES
   $ platformer select:env <environment-name>
 ```
 
-_See code: [src/commands/select/environment.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/environment.ts)_
+_See code: [src/commands/select/env.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/environment.ts)_
 
 ## `platformer select:organization [ORGANIZATION]`
 
@@ -78,7 +78,7 @@ EXAMPLES
   $ platformer select:org <organization-name>
 ```
 
-_See code: [src/commands/select/organization.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/organization.ts)_
+_See code: [src/commands/select/org.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/organization.ts)_
 
 ## `platformer select:project [PROJECT]`
 
@@ -105,4 +105,4 @@ EXAMPLES
   $ platformer select:project <project-name>
 ```
 
-_See code: [src/commands/select/project.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/project.ts)_
+_See code: [src/commands/select/proj.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/project.ts)_
