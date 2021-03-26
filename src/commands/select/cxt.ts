@@ -5,6 +5,8 @@ import inquirer = require('inquirer');
 import Command from '../../base-command';
 
 export default class SelectContext extends Command {
+  static aliases = ['select:context', 'select:ctx'];
+
   static description = 'Select a context';
 
   static flags = {
