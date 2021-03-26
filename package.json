@@ -1,7 +1,7 @@
 {
   "name": "platformer-cli",
   "description": "Command Line Interface for the Platformer Console",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "author": "binura.g@platformer.com, chamod.p@platformer.com",
   "bin": {
     "platformer": "./bin/run"

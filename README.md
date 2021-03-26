@@ -44,7 +44,7 @@ $ npm install -g platformer-cli
 $ platformer COMMAND
 running command...
 $ platformer (-v|--version|version)
-platformer-cli/0.1.9 linux-x64 node-v14.15.1
+platformer-cli/0.1.10 linux-x64 node-v14.15.1
 $ platformer --help [COMMAND]
 USAGE
   $ platformer COMMAND
@@ -65,10 +65,10 @@ USAGE
 * [`platformer import`](#platformer-import)
 * [`platformer login`](#platformer-login)
 * [`platformer logout`](#platformer-logout)
-* [`platformer select:context [NAME]`](#platformer-selectcontext-name)
-* [`platformer select:environment [ENVIRONMENT]`](#platformer-selectenvironment-environment)
-* [`platformer select:organization [ORGANIZATION]`](#platformer-selectorganization-organization)
-* [`platformer select:project [PROJECT]`](#platformer-selectproject-project)
+* [`platformer select:cxt [NAME]`](#platformer-selectcxt-name)
+* [`platformer select:env [ENVIRONMENT]`](#platformer-selectenv-environment)
+* [`platformer select:org [ORGANIZATION]`](#platformer-selectorg-organization)
+* [`platformer select:proj [PROJECT]`](#platformer-selectproj-project)
 
 ## `platformer apply FILEPATH`
 
@@ -91,7 +91,7 @@ OPTIONS
   --save
 ```
 
-_See code: [src/commands/apply.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/apply.ts)_
+_See code: [src/commands/apply.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/apply.ts)_
 
 ## `platformer cluster:connect [CLUSTER]`
 
@@ -116,7 +116,7 @@ EXAMPLES
   $ platformer connect:cluster --organization <organization> --project <project> # override context defaults
 ```
 
-_See code: [src/commands/cluster/connect.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/cluster/connect.ts)_
+_See code: [src/commands/cluster/connect.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/cluster/connect.ts)_
 
 ## `platformer cluster:list`
 
@@ -138,7 +138,7 @@ OPTIONS
   --no-truncate                    do not truncate output to fit screen
 ```
 
-_See code: [src/commands/cluster/list.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/cluster/list.ts)_
+_See code: [src/commands/cluster/list.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/cluster/list.ts)_
 
 ## `platformer context:add NAME`
 
@@ -155,7 +155,7 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/context/add.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/context/add.ts)_
+_See code: [src/commands/context/add.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/context/add.ts)_
 
 ## `platformer context:list`
 
@@ -175,7 +175,7 @@ OPTIONS
   --no-truncate      do not truncate output to fit screen
 ```
 
-_See code: [src/commands/context/list.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/context/list.ts)_
+_See code: [src/commands/context/list.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/context/list.ts)_
 
 ## `platformer context:remove NAME`
 
@@ -192,7 +192,7 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/context/remove.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/context/remove.ts)_
+_See code: [src/commands/context/remove.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/context/remove.ts)_
 
 ## `platformer help [COMMAND]`
 
@@ -231,7 +231,7 @@ OPTIONS
   --save
 ```
 
-_See code: [src/commands/import.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/import.ts)_
+_See code: [src/commands/import.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/import.ts)_
 
 ## `platformer login`
 
@@ -242,7 +242,7 @@ USAGE
   $ platformer login
 ```
 
-_See code: [src/commands/login.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/login.ts)_
+_See code: [src/commands/login.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/login.ts)_
 
 ## `platformer logout`
 
@@ -260,32 +260,36 @@ OPTIONS
                                      context)
 ```
 
-_See code: [src/commands/logout.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/logout.ts)_
+_See code: [src/commands/logout.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/logout.ts)_
 
-## `platformer select:context [NAME]`
+## `platformer select:cxt [NAME]`
 
 Select a context
 
 ```
 USAGE
-  $ platformer select:context [NAME]
+  $ platformer select:cxt [NAME]
 
 ARGUMENTS
   NAME  (OPTIONAL) Context name. If not provided, the CLI will prompt an interactive selection
 
 OPTIONS
   -h, --help  show CLI help
+
+ALIASES
+  $ platformer select:context
+  $ platformer select:ctx
 ```
 
-_See code: [src/commands/select/cxt.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/select/context.ts)_
+_See code: [src/commands/select/cxt.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/select/cxt.ts)_
 
-## `platformer select:environment [ENVIRONMENT]`
+## `platformer select:env [ENVIRONMENT]`
 
 Select a default Environment for your current context.
 
 ```
 USAGE
-  $ platformer select:environment [ENVIRONMENT]
+  $ platformer select:env [ENVIRONMENT]
 
 ARGUMENTS
   ENVIRONMENT  (OPTIONAL) Name of the Environment to set in the current context. If not provided, the CLI will open an
@@ -305,15 +309,15 @@ EXAMPLES
   $ platformer select:env <environment-name>
 ```
 
-_See code: [src/commands/select/env.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/select/environment.ts)_
+_See code: [src/commands/select/env.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/select/env.ts)_
 
-## `platformer select:organization [ORGANIZATION]`
+## `platformer select:org [ORGANIZATION]`
 
 Select a default Organization for your current context.
 
 ```
 USAGE
-  $ platformer select:organization [ORGANIZATION]
+  $ platformer select:org [ORGANIZATION]
 
 ARGUMENTS
   ORGANIZATION  (OPTIONAL) Name of the Organization to set in the current context. If not provided, the CLI will open an
@@ -332,15 +336,15 @@ EXAMPLES
   $ platformer select:org <organization-name>
 ```
 
-_See code: [src/commands/select/org.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/select/organization.ts)_
+_See code: [src/commands/select/org.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/select/org.ts)_
 
-## `platformer select:project [PROJECT]`
+## `platformer select:proj [PROJECT]`
 
 Select a default Project for your current context. Requires an Organization to be set with select:org or using the --o flag
 
 ```
 USAGE
-  $ platformer select:project [PROJECT]
+  $ platformer select:proj [PROJECT]
 
 ARGUMENTS
   PROJECT  (OPTIONAL) Name of the Project to set in the current context. If not provided, the CLI will open an
@@ -359,5 +363,5 @@ EXAMPLES
   $ platformer select:project <project-name>
 ```
 
-_See code: [src/commands/select/proj.ts](https://github.com/platformercloud/cli/blob/v0.1.9/src/commands/select/project.ts)_
+_See code: [src/commands/select/proj.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/select/proj.ts)_
 <!-- commandsstop -->
