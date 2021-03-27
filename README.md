@@ -281,7 +281,7 @@ ALIASES
   $ platformer select:ctx
 ```
 
-_See code: [src/commands/select/cxt.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/select/cxt.ts)_
+_See code: [src/commands/select/ctx.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/select/cxt.ts)_
 
 ## `platformer select:env [ENVIRONMENT]`
 
