@@ -77,18 +77,16 @@ export default class Apply extends Command {
       required: false,
       multiple: false,
     }),
+    'filepath': flags.string({
+      char: 'f',
+      description: 'Path to YAML file',
+      required: true,
+      multiple: false,
+    }),
   };
 
-  static args = [
-    {
-      name: 'filepath',
-      required: true,
-      description: 'Path to YAML file',
-    },
-  ];
-
   async run() {
-    const { flags, args } = this.parse(Apply);
+    const { flags } = this.parse(Apply);
     const context = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
@@ -104,7 +102,7 @@ export default class Apply extends Command {
       },
     });
     const ctx = context as Required<typeof context>;
-    const fileFolderPath = args.filepath;
+    const fileFolderPath = flags['filepath'];
     const targetNS = flags['target-ns'];
     const { orgId, projectId, envId } = ctx;
     if (targetNS) {
