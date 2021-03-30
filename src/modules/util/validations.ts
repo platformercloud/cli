@@ -30,7 +30,7 @@ export async function tryValidateCommonFlags(flags: {
     throw new ValidationError('Organization not set', {
       suggestions: [
         'Pass the organization name with the --organization flag',
-        'Set the default organization with $ platformer select:organization',
+        'Set the default organization with $ platformer select:org or select:organization',
       ],
     });
   }
@@ -38,7 +38,7 @@ export async function tryValidateCommonFlags(flags: {
     throw new ValidationError('Project not set', {
       suggestions: [
         'Pass the project name with the --project flag',
-        'Set the default project with $ platformer select:project',
+        'Set the default project with $ platformer select:proj or select:project',
       ],
     });
   }
@@ -49,7 +49,7 @@ export async function tryValidateCommonFlags(flags: {
     throw new ValidationError('Environment not set', {
       suggestions: [
         'Pass the environment name with the --environment flag',
-        'Set the default environment with $ platformer select:environment',
+        'Set the default environment with $ platformer select:env or select:environment',
       ],
     });
   }

@@ -23,7 +23,7 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/select/cxt.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/context.ts)_
+_See code: [src/commands/select/ctx.ts](https://github.com/platformercloud/cli/blob/v0.0.3/src/commands/select/context.ts)_
 
 ## `platformer select:environment [ENVIRONMENT]`
 
