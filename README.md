@@ -155,7 +155,7 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/context/add.ts.old](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/context/add.ts)_
+_See code: [src/commands/context/add.ts](https://github.com/platformercloud/cli/blob/v0.1.10/src/commands/context/add.ts)_
 
 ## `platformer context:list`
 
