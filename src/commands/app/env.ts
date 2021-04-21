@@ -12,13 +12,6 @@ export default class Init extends Command {
 
   static flags = {
     help: flags.help({ char: 'h' }),
-    // save: flags.boolean(),
-    // all: flags.boolean({
-    //   char: 'A',
-    //   description: 'Log out of all contexts',
-    //   required: false,
-    //   exclusive: ['context']
-    // }),
     organization: flags.string({
       char: 'o',
       description: 'Organization Name',
@@ -60,18 +53,6 @@ export default class Init extends Command {
       multiple: false,
       default: 'default'
     }),
-    // 'target-ns': flags.string({
-    //   char: 't',
-    //   description: 'Target namespace',
-    //   required: false,
-    //   multiple: false
-    // }),
-    // 'filepath': flags.string({
-    //   char: 'f',
-    //   description: 'Path to YAML file',
-    //   required: true,
-    //   multiple: false
-    // })
     replicas: flags.integer({
       char: 'r',
       description: 'Replica Count',
@@ -90,16 +71,8 @@ export default class Init extends Command {
       char: 'd',
       description: '[default: true] Auto Deploy (true|false)',
       required: false,
-      // multiple: false,
       default: true
     }),
-    // node: flags.string({
-    //   char: 'x',
-    //   description: 'Node Selector',
-    //   required: false,
-    //   multiple: false,
-    //   default: {}
-    // }),
     namespace: flags.string({
       char: 'z',
       description: 'Namespace',
@@ -126,19 +99,9 @@ export default class Init extends Command {
       }
     });
     const ctx = context as Required<typeof context>;
-    // const fileFolderPath = flags['filepath'];
-    // const targetNS = flags['target-ns'];
-    // const { orgId, projectId, envId } = ctx;
-    // if (targetNS) {
-    //   cli.log(`Target namespace [${targetNS}]`);
-    //   await ensureTargetNamespace({ orgId, projectId, envId, name: targetNS });
-    // }
     const { orgId, projectId, envId } = ctx;
-    // cli.log(orgId, projectId, flags.appName);
-    // await createApp({ name: flags.appName, orgId, projectId, type: flags.appType });
     const id = await getAppId({ projectId: projectId, orgId: orgId, name: flags.appName });
     await ensureTargetNamespace({ orgId, projectId, envId, name: flags.namespace });
-    // eslint-disable-next-line no-unused-vars
     const data: SetAppEnv = {
       ID: id,
       orgId: orgId,

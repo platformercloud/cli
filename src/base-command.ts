@@ -7,7 +7,6 @@ import {
   waitForSentryCompletion,
 } from './modules/sentry/sentry';
 import { writeHAR } from './modules/util/fetch';
-import { cli } from 'cli-ux';
 
 export default abstract class Command extends OCLIFCommand {
   async init() {
@@ -19,7 +18,6 @@ export default abstract class Command extends OCLIFCommand {
     switch (error.constructor) {
       case APIError: {
         const e = error as APIError;
-        cli.log(await e.data())
         if (e.statusCode === 401) {
           return this.error('You are not logged in', {
             exit: 1,

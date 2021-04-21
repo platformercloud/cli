@@ -2,18 +2,16 @@ import { getAPIGateway, getAuthToken } from '../config/helpers';
 import endpoints from '../util/api-endpoints';
 import { fetch } from '../util/fetch';
 import APIError from '../errors/api-error';
-import { OrgId, ProjectId } from '../apps/interface';
+import { OrgId, ProjectId } from '../apps/app.interface';
 
 interface CollectionCreate {
   name: string;
   orgId: OrgId;
   projectId: ProjectId;
-  // envId: string;
   type: boolean;
 }
 
 export async function createImageCollection(data: CollectionCreate) {
-  // const { orgId, projectId, envId, name, type } = data;
   const { orgId, projectId, name, type } = data;
   const url = `${getAPIGateway()}/${
     endpoints.RUDDER_DELIVERY
@@ -24,7 +22,6 @@ export async function createImageCollection(data: CollectionCreate) {
     cloud_connector_id: null,
     organization_id: orgId,
     project_id: projectId,
-    // environment_id: envId,
     metadata: {},
   };
   const response = await fetch(url, {

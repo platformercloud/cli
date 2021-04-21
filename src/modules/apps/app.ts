@@ -2,18 +2,16 @@ import { getAPIGateway, getAuthToken } from '../config/helpers';
 import APIError from '../errors/api-error';
 import endpoints from '../util/api-endpoints';
 import { fetch } from '../util/fetch';
-import { Application, OrgId, ProjectId } from './interface';
+import { Application, OrgId, ProjectId } from './app.interface';
 
 interface AppCreate {
   name: string;
   orgId: OrgId;
   projectId: ProjectId;
-  // envId: string;
   type: string;
 }
 
 export async function createApp(data: AppCreate) {
-  // const { orgId, projectId, envId, name, type } = data;
   const { orgId, projectId, name, type } = data;
   const url = `${getAPIGateway()}/${
     endpoints.RUDDER_APP
@@ -21,7 +19,6 @@ export async function createApp(data: AppCreate) {
   const reqBody = {
     organization_id: orgId,
     project_id: projectId,
-    // environment_id: envId,
     name: name,
     metadata: {},
     type: type
@@ -43,8 +40,6 @@ export async function createApp(data: AppCreate) {
 }
 
 export async function getApps(projectId: ProjectId, orgId: OrgId): Promise<Application[]> {
-  // const { orgId, projectId, envId } = data;
-  // const { projectId } = data;
   const url = new URL(
     `${getAPIGateway()}/${
       endpoints.RUDDER_APP
@@ -57,7 +52,6 @@ export async function getApps(projectId: ProjectId, orgId: OrgId): Promise<Appli
       'Content-Type': 'application/json',
       'x-organization-id': orgId,
       'x-project-id': projectId,
-      // 'x-env-id': envId,
       Authorization: getAuthToken()
     }
   });
@@ -71,8 +65,6 @@ interface GetApp {
   name: string;
   orgId: OrgId;
   projectId: ProjectId;
-  // envId: string;
-  // type: string;
 }
 
 export async function getApp(data: GetApp): Promise<Application[]> {
@@ -88,19 +80,19 @@ export async function getAppId(data: GetApp): Promise<string> {
   return app[0].ID;
 }
 
-export async function getAppEnvId(data: GetApp): Promise<string> {
-
+export async function getAppEnvId(data: GetApp, envId: string): Promise<string> {
   const app: Application[] | null = await getApp(data);
 
   if (app) {
     const appEnv = app[0].app_environments;
     if (appEnv) {
-      return appEnv[0].ID;
+      const e = appEnv.filter(a =>
+        a.environment_id === envId
+      );
+      return e[0].ID
     }
   }
-  throw new Error('Something')
-
-
+  throw new Error('Please Set App Environment');
 }
 
 export interface SetAppEnv {
@@ -118,7 +110,6 @@ export interface SetAppEnv {
 }
 
 export async function setAppEnv(data: SetAppEnv) {
-  // const { orgId, projectId, envId, name, type } = data;
   const {
     ID,
     orgId,
@@ -137,12 +128,8 @@ export async function setAppEnv(data: SetAppEnv) {
   }/${ID}/environment`;
   const reqBody = {
     auto_deploy: auto_deploy,
-    // organization_id: orgId,
-    // project_id: projectId,
     environment_id: envId,
-    // name: name,
     metadata: null,
-    // type: type
     service_account_name: service_account_name,
     graceful_termination_seconds: graceful_termination_seconds,
     replicas: replicas,
@@ -181,7 +168,6 @@ export interface AppCreateContainer {
 }
 
 export async function createAppContainer(data: AppCreateContainer) {
-  // const { orgId, projectId, envId, name, type } = data;
   const {
     ID,
     orgId,
@@ -196,8 +182,6 @@ export async function createAppContainer(data: AppCreateContainer) {
     endpoints.RUDDER_APP
   }/${ID}/environment/${envId}/container`;
   const reqBody = {
-    // organization_id: orgId,
-    // project_id: projectId,
     app_environment_id: envId,
     name: name,
     metadata: {},

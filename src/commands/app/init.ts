@@ -11,13 +11,6 @@ export default class Init extends Command {
 
   static flags = {
     help: flags.help({ char: 'h' }),
-    // save: flags.boolean(),
-    // all: flags.boolean({
-    //   char: 'A',
-    //   description: 'Log out of all contexts',
-    //   required: false,
-    //   exclusive: ['context']
-    // }),
     organization: flags.string({
       char: 'o',
       description: 'Organization Name',
@@ -44,25 +37,6 @@ export default class Init extends Command {
       required: true,
       multiple: false
     })
-    // environment: flags.string({
-    //   char: 'e',
-    //   description: 'Environment Name',
-    //   required: false,
-    //   multiple: false,
-    //   default: () => getDefaultEnvironment()?.name
-    // }),
-    // 'target-ns': flags.string({
-    //   char: 't',
-    //   description: 'Target namespace',
-    //   required: false,
-    //   multiple: false
-    // }),
-    // 'filepath': flags.string({
-    //   char: 'f',
-    //   description: 'Path to YAML file',
-    //   required: true,
-    //   multiple: false
-    // })
   };
 
   async run() {
@@ -76,38 +50,10 @@ export default class Init extends Command {
         name: flags.project,
         required: true
       }
-      // ,
-      // environment: {
-      //   name: flags.environment,
-      //   required: true
-      // }
     });
     const ctx = context as Required<typeof context>;
-    // const fileFolderPath = flags['filepath'];
-    // const targetNS = flags['target-ns'];
-    // const { orgId, projectId, envId } = ctx;
-    // if (targetNS) {
-    //   cli.log(`Target namespace [${targetNS}]`);
-    //   await ensureTargetNamespace({ orgId, projectId, envId, name: targetNS });
-    // }
     const { orgId, projectId } = ctx;
-    // cli.log(orgId, projectId, flags.appName, flags.appType);
     await createApp({ name: flags.appName, orgId, projectId, type: flags.appType });
     cli.log('App Created successfully');
   }
 }
-
-/*
-export interface Application {
-  ID: string;
-  name: string;
-  organization_id: string;
-  project_id: string;
-  type: string;
-  // app_environments: AppEnvironment[] | null;
-  // metadata: Record<string, string> | null;
-  // CreatedAt: string;
-  // DeletedAt: string | null;
-  // UpdatedAt: string;
-}
-*/
