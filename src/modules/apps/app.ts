@@ -89,7 +89,7 @@ export async function getAppEnvId(data: GetApp, envId: string): Promise<string> 
       const e = appEnv.filter(a =>
         a.environment_id === envId
       );
-      return e[0].ID
+      return e[0].ID;
     }
   }
   throw new Error('Please Set App Environment');
@@ -104,7 +104,7 @@ export interface SetAppEnv {
   service_account_name: string;
   graceful_termination_seconds: number;
   replicas: number;
-  namespace: string; //note
+  namespace: string;
   name: string;
   type: string;
 }
