@@ -58,6 +58,13 @@ export default class Con extends Command {
       required: false,
       multiple: false,
       default: 128
+    }),
+    port: flags.integer({
+      char: 'q',
+      description: 'Port',
+      required: false,
+      multiple: false,
+      default: 8080
     })
   };
 
@@ -90,7 +97,8 @@ export default class Con extends Command {
       envId: appEnvId,
       type: flags.appType,
       cpu: flags.cpu,
-      memory: flags.memory
+      memory: flags.memory,
+      port: flags.port
     };
     await createAppContainer(data);
     cli.log('App Created successfully');

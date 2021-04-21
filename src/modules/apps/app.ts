@@ -165,6 +165,7 @@ export interface AppCreateContainer {
   type: string;
   cpu: number;
   memory: number;
+  port: number;
 }
 
 export async function createAppContainer(data: AppCreateContainer) {
@@ -176,7 +177,8 @@ export async function createAppContainer(data: AppCreateContainer) {
     name,
     type,
     cpu,
-    memory
+    memory,
+    port
   } = data;
   const url = `${getAPIGateway()}/${
     endpoints.RUDDER_APP
@@ -189,7 +191,13 @@ export async function createAppContainer(data: AppCreateContainer) {
     image_registry_id: null,
     image_id: null,
     custom_image: null,
-    ports: [],
+    ports: [
+      {
+        port: port,
+        protocol: 'TCP',
+        service_port: port
+      }
+    ],
     cpu: cpu,
     memory: memory,
     cpu_limit: 0,
