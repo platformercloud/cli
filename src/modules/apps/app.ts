@@ -1,7 +1,7 @@
 import { getAPIGateway, getAuthToken } from '../config/helpers';
+import APIError from '../errors/api-error';
 import endpoints from '../util/api-endpoints';
 import { fetch } from '../util/fetch';
-import APIError from '../errors/api-error';
 import { Application, OrgId, ProjectId } from './interface';
 
 interface AppCreate {
@@ -89,9 +89,18 @@ export async function getAppId(data: GetApp): Promise<string> {
 }
 
 export async function getAppEnvId(data: GetApp): Promise<string> {
-  const app = await getApp(data);
-  // @ts-ignore
-  return app[0].app_environments[0].ID;
+
+  const app: Application[] | null = await getApp(data);
+
+  if (app) {
+    const appEnv = app[0].app_environments;
+    if (appEnv) {
+      return appEnv[0].ID;
+    }
+  }
+  throw new Error('Something')
+
+
 }
 
 export interface SetAppEnv {
