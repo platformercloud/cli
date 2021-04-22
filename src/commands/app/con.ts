@@ -3,7 +3,7 @@ import { cli } from 'cli-ux';
 import Command from '../../base-command';
 import { getDefaultEnvironment, getDefaultOrganization, getDefaultProject } from '../../modules/config/helpers';
 import { tryValidateCommonFlags } from '../../modules/util/validations';
-import { AppCreateContainer, createAppContainer, getAppEnvId, getAppId } from '../../modules/apps/app';
+import { AppCreateContainer, createAppContainer, getApp, getAppEnvId } from '../../modules/apps/app';
 
 export default class Con extends Command {
   static description =
@@ -28,6 +28,12 @@ export default class Con extends Command {
     appName: flags.string({
       char: 'n',
       description: 'App Name',
+      required: true,
+      multiple: false
+    }),
+    containerName: flags.string({
+      char: 'c',
+      description: 'Container Name',
       required: true,
       multiple: false
     }),
@@ -87,20 +93,27 @@ export default class Con extends Command {
     });
     const ctx = context as Required<typeof context>;
     const { orgId, projectId, envId } = ctx;
-    const id = await getAppId({ projectId: projectId, orgId: orgId, name: flags.appName });
-    const appEnvId = await getAppEnvId({ projectId: projectId, orgId: orgId, name: flags.appName }, envId);
+    cli.action.start('Creating container for app')
+    const app = await getApp({ projectId: projectId, orgId: orgId, name: flags.appName });
+    if (!app) {
+      throw new Error('App not found');
+    }
+    const appEnvId = await getAppEnvId(app, envId);
+    if (!appEnvId) {
+      throw new Error('Please Set App Environment');
+    }
     const data: AppCreateContainer = {
-      ID: id,
-      name: flags.appName,
+      ID: app.ID,
+      name: flags.containerName,
       orgId: orgId,
       projectId: projectId,
-      envId: appEnvId,
+      appEnvId: appEnvId,
       type: flags.appType,
       cpu: flags.cpu,
       memory: flags.memory,
       port: flags.port
     };
     await createAppContainer(data);
-    cli.log('App Created successfully');
+    cli.action.stop('App Container created successfully');
   }
 }

@@ -3,6 +3,8 @@ import APIError from '../errors/api-error';
 import endpoints from '../util/api-endpoints';
 import { fetch } from '../util/fetch';
 import { Application, OrgId, ProjectId } from './app.interface';
+import ValidationError from '../errors/validation-error';
+import { Response } from 'node-fetch';
 
 interface AppCreate {
   name: string;
@@ -67,32 +69,20 @@ interface GetApp {
   projectId: ProjectId;
 }
 
-export async function getApp(data: GetApp): Promise<Application[]> {
+export async function getApp(data: GetApp): Promise<Application | null> {
   const { orgId, projectId, name } = data;
   const appList = await getApps(projectId, orgId);
-  return appList.filter(a =>
+  return appList.find(a =>
     a.name === name
+  ) ?? null;
+}
+
+export async function getAppEnvId(app: Application, envId: string): Promise<string | undefined> {
+  const appEnv = app.app_environments;
+  const e = appEnv?.find(a =>
+    a.environment_id === envId
   );
-}
-
-export async function getAppId(data: GetApp): Promise<string> {
-  const app = await getApp(data);
-  return app[0].ID;
-}
-
-export async function getAppEnvId(data: GetApp, envId: string): Promise<string> {
-  const app: Application[] | null = await getApp(data);
-
-  if (app) {
-    const appEnv = app[0].app_environments;
-    if (appEnv) {
-      const e = appEnv.filter(a =>
-        a.environment_id === envId
-      );
-      return e[0].ID;
-    }
-  }
-  throw new Error('Please Set App Environment');
+  return e?.ID;
 }
 
 export interface SetAppEnv {
@@ -161,7 +151,7 @@ export interface AppCreateContainer {
   name: string;
   orgId: OrgId;
   projectId: ProjectId;
-  envId: string;
+  appEnvId: string;
   type: string;
   cpu: number;
   memory: number;
@@ -173,7 +163,7 @@ export async function createAppContainer(data: AppCreateContainer) {
     ID,
     orgId,
     projectId,
-    envId,
+    appEnvId,
     name,
     type,
     cpu,
@@ -182,9 +172,9 @@ export async function createAppContainer(data: AppCreateContainer) {
   } = data;
   const url = `${getAPIGateway()}/${
     endpoints.RUDDER_APP
-  }/${ID}/environment/${envId}/container`;
+  }/${ID}/environment/${appEnvId}/container`;
   const reqBody = {
-    app_environment_id: envId,
+    app_environment_id: appEnvId,
     name: name,
     metadata: {},
     type: type,
@@ -207,18 +197,29 @@ export async function createAppContainer(data: AppCreateContainer) {
     command: [],
     image_pull_policy: 'Always'
   };
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-organization-id': orgId,
-      'x-project-id': projectId,
-      Authorization: getAuthToken()
-    },
-    body: JSON.stringify(reqBody)
-  });
-  if (response.ok) {
-    return;
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-organization-id': orgId,
+        'x-project-id': projectId,
+        Authorization: getAuthToken()
+      },
+      body: JSON.stringify(reqBody)
+    });
+    if (response.ok) {
+      return;
+    }
+    const res = await response.json();
+    if (res.errors.message) {
+      throw new ValidationError(res.errors.message);
+    }
+  } catch (e) {
+    if (e instanceof ValidationError) {
+      throw e;
+    }
+    throw new APIError('Failed to create container for app', response!);
   }
-  throw new APIError('Failed to create container for app', response);
 }

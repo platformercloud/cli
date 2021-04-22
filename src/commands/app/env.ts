@@ -3,8 +3,9 @@ import { cli } from 'cli-ux';
 import Command from '../../base-command';
 import { getDefaultEnvironment, getDefaultOrganization, getDefaultProject } from '../../modules/config/helpers';
 import { tryValidateCommonFlags } from '../../modules/util/validations';
-import { getAppId, setAppEnv, SetAppEnv } from '../../modules/apps/app';
+import { getApp, setAppEnv, SetAppEnv } from '../../modules/apps/app';
 import { ensureTargetNamespace } from '../../modules/apps/environment';
+import ValidationError from '../../modules/errors/validation-error';
 
 export default class Init extends Command {
   static description =
@@ -100,10 +101,16 @@ export default class Init extends Command {
     });
     const ctx = context as Required<typeof context>;
     const { orgId, projectId, envId } = ctx;
-    const id = await getAppId({ projectId: projectId, orgId: orgId, name: flags.appName });
+    const app = await getApp({ projectId: projectId, orgId: orgId, name: flags.appName });
+    if (!app) {
+      throw new Error('App not found');
+    }
+    if (app.app_environments?.some(a => a.environment_id === envId)) {
+      throw new ValidationError('App environment already initialized');
+    }
     await ensureTargetNamespace({ orgId, projectId, envId, name: flags.namespace });
     const data: SetAppEnv = {
-      ID: id,
+      ID: app?.ID,
       orgId: orgId,
       projectId: projectId,
       envId: envId,
