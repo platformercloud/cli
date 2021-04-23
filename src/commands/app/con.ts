@@ -76,6 +76,7 @@ export default class Con extends Command {
 
   async run() {
     const { flags } = this.parse(Con);
+    cli.action.start('Creating container for app');
     const context = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
@@ -93,7 +94,6 @@ export default class Con extends Command {
     });
     const ctx = context as Required<typeof context>;
     const { orgId, projectId, envId } = ctx;
-    cli.action.start('Creating container for app')
     const app = await getApp({ projectId: projectId, orgId: orgId, name: flags.appName });
     if (!app) {
       throw new Error('App not found');
@@ -114,6 +114,6 @@ export default class Con extends Command {
       port: flags.port
     };
     await createAppContainer(data);
-    cli.action.stop('App Container created successfully');
+    cli.action.stop('\nApp Container created successfully');
   }
 }

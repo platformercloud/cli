@@ -101,6 +101,7 @@ export default class Init extends Command {
     });
     const ctx = context as Required<typeof context>;
     const { orgId, projectId, envId } = ctx;
+    cli.action.stop('\nConfigured environment for app');
     const app = await getApp({ projectId: projectId, orgId: orgId, name: flags.appName });
     if (!app) {
       throw new Error('App not found');
@@ -110,7 +111,7 @@ export default class Init extends Command {
     }
     await ensureTargetNamespace({ orgId, projectId, envId, name: flags.namespace });
     const data: SetAppEnv = {
-      ID: app?.ID,
+      ID: app.ID,
       orgId: orgId,
       projectId: projectId,
       envId: envId,
@@ -123,6 +124,6 @@ export default class Init extends Command {
       type: flags.appType
     };
     await setAppEnv(data);
-    cli.log('App environment configured successfully');
+    cli.action.stop('\nApp environment configured successfully');
   }
 }

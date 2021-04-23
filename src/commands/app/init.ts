@@ -41,6 +41,7 @@ export default class Init extends Command {
 
   async run() {
     const { flags } = this.parse(Init);
+    cli.action.start('Creating app');
     const context = await tryValidateCommonFlags({
       organization: {
         name: flags.organization,
@@ -54,6 +55,6 @@ export default class Init extends Command {
     const ctx = context as Required<typeof context>;
     const { orgId, projectId } = ctx;
     await createApp({ name: flags.appName, orgId, projectId, type: flags.appType });
-    cli.log('App Created successfully');
+    cli.action.stop('\nApp Created successfully');
   }
 }
