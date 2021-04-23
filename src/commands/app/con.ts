@@ -102,13 +102,22 @@ export default class Con extends Command {
     if (!appEnvId) {
       throw new Error('Please Set App Environment');
     }
+    if (flags.cpu > 4) {
+      throw new Error('Maximum CPU size is 4');
+    }
+    if (flags.memory > 3096) {
+      throw new Error('Maximum memory size is 3096');
+    }
+    if (!flags.appType.toUpperCase().match(/^(MAIN|INIT|SIDECAR)$/)) {
+      throw new Error('Wrong app type, it must be MAIN,INIT or SIDECAR');
+    }
     const data: AppCreateContainer = {
       ID: app.ID,
       name: flags.containerName,
       orgId: orgId,
       projectId: projectId,
       appEnvId: appEnvId,
-      type: flags.appType,
+      type: flags.appType.toUpperCase(),
       cpu: flags.cpu,
       memory: flags.memory,
       port: flags.port

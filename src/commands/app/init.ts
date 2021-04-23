@@ -54,6 +54,9 @@ export default class Init extends Command {
     });
     const ctx = context as Required<typeof context>;
     const { orgId, projectId } = ctx;
+    if (!flags.appType.match(/^(Deployment|Job|CronJob|StatefulSet|DaemonSet)$/)) {
+      throw new Error('Wrong app type, it must be Deployment,Job,CronJob.StatefulSet or DaemonSet');
+    }
     await createApp({ name: flags.appName, orgId, projectId, type: flags.appType });
     cli.action.stop('\nApp Created successfully');
   }
