@@ -179,10 +179,6 @@ export async function createAppContainer(data: AppCreateContainer) {
   const url = `${getAPIGateway()}/${
     endpoints.RUDDER_APP
   }/${ID}/environment/${appEnvId}/container`;
-  // const portSet = (port) => {
-  //   const arr[]
-  //   port.
-  // }
   const reqBody = {
     app_environment_id: appEnvId,
     name: name,
