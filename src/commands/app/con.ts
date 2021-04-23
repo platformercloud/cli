@@ -3,7 +3,7 @@ import { cli } from 'cli-ux';
 import Command from '../../base-command';
 import { getDefaultEnvironment, getDefaultOrganization, getDefaultProject } from '../../modules/config/helpers';
 import { tryValidateCommonFlags } from '../../modules/util/validations';
-import { AppCreateContainer, createAppContainer, getApp, getAppEnvId } from '../../modules/apps/app';
+import { AppCreateContainer, AppPort, createAppContainer, getApp, getAppEnvId } from '../../modules/apps/app';
 
 export default class Con extends Command {
   static description =
@@ -69,7 +69,7 @@ export default class Con extends Command {
       char: 'q',
       description: 'Port',
       required: false,
-      multiple: false,
+      multiple: true,
       default: 8080
     })
   };
@@ -102,8 +102,8 @@ export default class Con extends Command {
     if (!appEnvId) {
       throw new Error('Please Set App Environment');
     }
-    if (flags.cpu > 4) {
-      throw new Error('Maximum CPU size is 4');
+    if (flags.cpu > 4000) {
+      throw new Error('Maximum CPU size is 4000');
     }
     if (flags.memory > 3096) {
       throw new Error('Maximum memory size is 3096');
@@ -111,6 +111,7 @@ export default class Con extends Command {
     if (!flags.appType.toUpperCase().match(/^(MAIN|INIT|SIDECAR)$/)) {
       throw new Error('Wrong app type, it must be MAIN,INIT or SIDECAR');
     }
+    const portSet = portObjArr(flags.port);
     const data: AppCreateContainer = {
       ID: app.ID,
       name: flags.containerName,
@@ -120,9 +121,30 @@ export default class Con extends Command {
       type: flags.appType.toUpperCase(),
       cpu: flags.cpu,
       memory: flags.memory,
-      port: flags.port
+      port: portSet
     };
     await createAppContainer(data);
     cli.action.stop('\nApp Container created successfully');
   }
+}
+
+function portObjArr(a: number[] | number): AppPort[] {
+  let objArr: AppPort [] = [];
+  if (!Array.isArray(a)) {
+    return [{
+      port: a,
+      protocol: 'TCP',
+      service_port: a
+    }];
+  }
+  a.forEach(v => {
+    objArr.push(
+      {
+        port: v,
+        protocol: 'TCP',
+        service_port: v
+      }
+    );
+  });
+  return objArr;
 }

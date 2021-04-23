@@ -146,6 +146,12 @@ export async function setAppEnv(data: SetAppEnv) {
   throw new APIError('Failed to set app environment', response);
 }
 
+export interface AppPort {
+  port: number;
+  protocol: string;
+  service_port: number;
+}
+
 export interface AppCreateContainer {
   ID: string;
   name: string;
@@ -155,7 +161,7 @@ export interface AppCreateContainer {
   type: string;
   cpu: number;
   memory: number;
-  port: number;
+  port: AppPort[];
 }
 
 export async function createAppContainer(data: AppCreateContainer) {
@@ -173,6 +179,10 @@ export async function createAppContainer(data: AppCreateContainer) {
   const url = `${getAPIGateway()}/${
     endpoints.RUDDER_APP
   }/${ID}/environment/${appEnvId}/container`;
+  // const portSet = (port) => {
+  //   const arr[]
+  //   port.
+  // }
   const reqBody = {
     app_environment_id: appEnvId,
     name: name,
@@ -181,13 +191,7 @@ export async function createAppContainer(data: AppCreateContainer) {
     image_registry_id: null,
     image_id: null,
     custom_image: null,
-    ports: [
-      {
-        port: port,
-        protocol: 'TCP',
-        service_port: port
-      }
-    ],
+    ports: port,
     cpu: cpu,
     memory: memory,
     cpu_limit: 0,
