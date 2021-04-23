@@ -129,7 +129,6 @@ export default class Con extends Command {
 }
 
 function portObjArr(a: number[] | number): AppPort[] {
-  let objArr: AppPort [] = [];
   if (!Array.isArray(a)) {
     return [{
       port: a,
@@ -137,14 +136,11 @@ function portObjArr(a: number[] | number): AppPort[] {
       service_port: a
     }];
   }
-  a.forEach(v => {
-    objArr.push(
-      {
-        port: v,
-        protocol: 'TCP',
-        service_port: v
-      }
-    );
+  return a.map(c => {
+    return {
+      port: c,
+      protocol: 'TCP',
+      service_port: c
+    };
   });
-  return objArr;
 }
