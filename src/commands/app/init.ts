@@ -4,6 +4,7 @@ import Command from '../../base-command';
 import { getDefaultOrganization, getDefaultProject } from '../../modules/config/helpers';
 import { tryValidateCommonFlags } from '../../modules/util/validations';
 import { createApp } from '../../modules/apps/app';
+import { validateAppName50 } from '../../modules/util/rudder_validations';
 
 export default class Init extends Command {
   static description =
@@ -56,6 +57,9 @@ export default class Init extends Command {
     const { orgId, projectId } = ctx;
     if (!flags.appType.match(/^(Deployment|Job|CronJob|StatefulSet|DaemonSet)$/)) {
       throw new Error('Wrong app type, it must be Deployment,Job,CronJob.StatefulSet or DaemonSet');
+    }
+    if (validateAppName50(flags.appName)) {
+      throw new Error('App name must be a valid kubernetes name');
     }
     await createApp({ name: flags.appName, orgId, projectId, type: flags.appType });
     cli.action.stop('\nApp Created successfully');
