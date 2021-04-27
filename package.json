@@ -25,7 +25,8 @@
     "patch-package": "^6.2.2",
     "postinstall-postinstall": "^2.1.0",
     "rxjs": "^6.6.3",
-    "tslib": "^1"
+    "tslib": "^1",
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",
