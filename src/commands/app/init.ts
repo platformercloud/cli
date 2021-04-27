@@ -58,9 +58,7 @@ export default class Init extends Command {
     if (!flags.appType.match(/^(Deployment|Job|CronJob|StatefulSet|DaemonSet)$/)) {
       throw new Error('Wrong app type, it must be Deployment,Job,CronJob.StatefulSet or DaemonSet');
     }
-    if (validateAppName50(flags.appName)) {
-      throw new Error('App name must be a valid kubernetes name');
-    }
+    validateAppName50(flags.appName)
     await createApp({ name: flags.appName, orgId, projectId, type: flags.appType });
     cli.action.stop('\nApp Created successfully');
   }

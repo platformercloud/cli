@@ -4,7 +4,7 @@ import Command from '../../base-command';
 import { getDefaultEnvironment, getDefaultOrganization, getDefaultProject } from '../../modules/config/helpers';
 import { tryValidateCommonFlags } from '../../modules/util/validations';
 import { AppCreateContainer, AppPort, createAppContainer, getApp, getAppEnvId } from '../../modules/apps/app';
-import { validateAppName50 } from '../../modules/util/rudder_validations';
+import { validateContainerName } from '../../modules/util/rudder_validations';
 
 export default class Con extends Command {
   static description =
@@ -118,9 +118,7 @@ export default class Con extends Command {
     if (!flags.appType.toUpperCase().match(/^(MAIN|INIT|SIDECAR)$/)) {
       throw new Error('Wrong app type, it must be MAIN,INIT or SIDECAR');
     }
-    if (validateAppName50(flags.containerName)) {
-      throw new Error('Container name must be a valid kubernetes name');
-    }
+    validateContainerName(flags.containerName)
     const portSet = portObjArr(flags.port);
     const data: AppCreateContainer = {
       ID: app.ID,
