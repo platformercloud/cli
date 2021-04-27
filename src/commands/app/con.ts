@@ -108,6 +108,12 @@ export default class Con extends Command {
     if (flags.memory > 3096) {
       throw new Error('Maximum memory size is 3096');
     }
+    if (flags.cpu < 50) {
+      throw new Error('Minimum CPU size is 50');
+    }
+    if (flags.memory < 128) {
+      throw new Error('Minimum memory size is 128');
+    }
     if (!flags.appType.toUpperCase().match(/^(MAIN|INIT|SIDECAR)$/)) {
       throw new Error('Wrong app type, it must be MAIN,INIT or SIDECAR');
     }
