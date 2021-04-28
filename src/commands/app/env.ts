@@ -101,7 +101,7 @@ export default class Init extends Command {
     });
     const ctx = context as Required<typeof context>;
     const { orgId, projectId, envId } = ctx;
-    cli.action.start('\nConfigured environment for app');
+    cli.action.start('Configured environment for app');
     if (!flags.appType.match(/^(ClusterIP|NodePort|LoadBalancer)$/)) {
       throw new Error('Wrong app type, it must be ClusterIP,NodePort or LoadBalancer');
     }
