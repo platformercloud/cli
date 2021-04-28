@@ -3,7 +3,7 @@ import { string as str } from 'yup';
 const ALPHANUMERIC_WITH_HYPHEN = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
 
 function createHostNameValidator(length: number, msg: string) {
-  const requiredHostName = str().trim().required('This field is required').concat(
+  const requiredHostName = str().trim().concat(
     str()
       .max(length, `Maximum length of ${length} characters exceeded`)
       .matches(ALPHANUMERIC_WITH_HYPHEN, msg)
