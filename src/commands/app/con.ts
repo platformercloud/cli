@@ -5,6 +5,7 @@ import { getDefaultEnvironment, getDefaultOrganization, getDefaultProject } from
 import { tryValidateCommonFlags } from '../../modules/util/validations';
 import { AppCreateContainer, AppPort, createAppContainer, getApp, getAppEnvId } from '../../modules/apps/app';
 import { validateContainerName } from '../../modules/util/rudder_validations';
+import { getDefaultAppName } from '../../modules/files/files';
 
 export default class Con extends Command {
   static description =
@@ -29,7 +30,7 @@ export default class Con extends Command {
     appName: flags.string({
       char: 'n',
       description: 'App Name',
-      required: true,
+      required: false,
       multiple: false
     }),
     containerName: flags.string({
@@ -53,7 +54,7 @@ export default class Con extends Command {
       default: () => getDefaultEnvironment()?.name
     }),
     cpu: flags.integer({
-      char: 'c',
+      char: 'u',
       description: 'CPU',
       required: false,
       multiple: false,
@@ -95,7 +96,11 @@ export default class Con extends Command {
     });
     const ctx = context as Required<typeof context>;
     const { orgId, projectId, envId } = ctx;
-    const app = await getApp({ projectId: projectId, orgId: orgId, name: flags.appName });
+    let appName: string | undefined = flags.appName;
+    if (!flags.appName) {
+      appName = getDefaultAppName();
+    }
+    const app = await getApp({ projectId: projectId, orgId: orgId, name: appName! });
     if (!app) {
       throw new Error('App not found');
     }
@@ -118,7 +123,7 @@ export default class Con extends Command {
     if (!flags.appType.toUpperCase().match(/^(MAIN|INIT|SIDECAR)$/)) {
       throw new Error('Wrong app type, it must be MAIN,INIT or SIDECAR');
     }
-    validateContainerName(flags.containerName)
+    validateContainerName(flags.containerName);
     const portSet = portObjArr(flags.port);
     const data: AppCreateContainer = {
       ID: app.ID,

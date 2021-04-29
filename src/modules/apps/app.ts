@@ -6,7 +6,7 @@ import { Application, OrgId, ProjectId } from './app.interface';
 import ValidationError from '../errors/validation-error';
 import { Response } from 'node-fetch';
 
-interface AppCreate {
+export interface AppCreate {
   name: string;
   orgId: OrgId;
   projectId: ProjectId;

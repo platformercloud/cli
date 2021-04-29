@@ -3,8 +3,9 @@ import { cli } from 'cli-ux';
 import Command from '../../base-command';
 import { getDefaultOrganization, getDefaultProject } from '../../modules/config/helpers';
 import { tryValidateCommonFlags } from '../../modules/util/validations';
-import { createApp } from '../../modules/apps/app';
+import { AppCreate, createApp } from '../../modules/apps/app';
 import { validateAppName50 } from '../../modules/util/rudder_validations';
+import { createFolder, writeFile } from '../../modules/files/files';
 
 export default class Init extends Command {
   static description =
@@ -58,8 +59,16 @@ export default class Init extends Command {
     if (!flags.appType.match(/^(Deployment|Job|CronJob|StatefulSet|DaemonSet)$/)) {
       throw new Error('Wrong app type, it must be Deployment,Job,CronJob.StatefulSet or DaemonSet');
     }
-    validateAppName50(flags.appName)
-    await createApp({ name: flags.appName, orgId, projectId, type: flags.appType });
+    validateAppName50(flags.appName);
+    const data: AppCreate = {
+      name: flags.appName,
+      orgId: orgId,
+      projectId: projectId,
+      type: flags.appType
+    };
+    await createApp(data);
+    createFolder('./.app.platformer');
+    writeFile('./.app.platformer/config.json', data);
     cli.action.stop('\nApp Created successfully');
   }
 }

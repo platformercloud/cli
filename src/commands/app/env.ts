@@ -6,6 +6,7 @@ import { tryValidateCommonFlags } from '../../modules/util/validations';
 import { getApp, setAppEnv, SetAppEnv } from '../../modules/apps/app';
 import { ensureTargetNamespace } from '../../modules/apps/environment';
 import ValidationError from '../../modules/errors/validation-error';
+import { getDefaultAppName } from '../../modules/files/files';
 
 export default class Init extends Command {
   static description =
@@ -30,7 +31,7 @@ export default class Init extends Command {
     appName: flags.string({
       char: 'n',
       description: 'App Name',
-      required: true,
+      required: false,
       multiple: false
     }),
     appType: flags.string({
@@ -105,7 +106,11 @@ export default class Init extends Command {
     if (!flags.appType.match(/^(ClusterIP|NodePort|LoadBalancer)$/)) {
       throw new Error('Wrong app type, it must be ClusterIP,NodePort or LoadBalancer');
     }
-    const app = await getApp({ projectId: projectId, orgId: orgId, name: flags.appName });
+    let appName: string | undefined = flags.appName;
+    if (!flags.appName) {
+      appName = getDefaultAppName();
+    }
+    const app = await getApp({ projectId: projectId, orgId: orgId, name: appName! });
     if (!app) {
       throw new Error('App not found');
     }
@@ -123,7 +128,7 @@ export default class Init extends Command {
       graceful_termination_seconds: flags.graceful,
       replicas: flags.replicas,
       namespace: flags.namespace,
-      name: flags.appName,
+      name: appName!,
       type: flags.appType
     };
     await setAppEnv(data);
