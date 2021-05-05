@@ -1,12 +1,12 @@
 import { flags } from '@oclif/command';
 import { cli } from 'cli-ux';
 import Command from '../../base-command';
-import { getDefaultEnvironment, getDefaultOrganization, getDefaultProject } from '../../modules/config/helpers';
-import { tryValidateCommonFlags } from '../../modules/util/validations';
+import { getDefaultEnvironment } from '../../modules/config/helpers';
+import { ValidateEnvironment } from '../../modules/util/validations';
 import { getApp, setAppEnv, SetAppEnv } from '../../modules/apps/app';
 import { ensureTargetNamespace } from '../../modules/apps/environment';
 import ValidationError from '../../modules/errors/validation-error';
-import { getDefaultAppName } from '../../modules/files/files';
+import { getDefaultAppName, getDefaultOrganizationIdFile, getDefaultProjectIdFile } from '../../modules/apps/files';
 
 export default class Init extends Command {
   static description =
@@ -14,26 +14,6 @@ export default class Init extends Command {
 
   static flags = {
     help: flags.help({ char: 'h' }),
-    organization: flags.string({
-      char: 'o',
-      description: 'Organization Name',
-      required: false,
-      multiple: false,
-      default: () => getDefaultOrganization()?.name
-    }),
-    project: flags.string({
-      char: 'p',
-      description: 'Project Name',
-      required: false,
-      multiple: false,
-      default: () => getDefaultProject()?.name
-    }),
-    appName: flags.string({
-      char: 'n',
-      description: 'App Name',
-      required: false,
-      multiple: false
-    }),
     appType: flags.string({
       char: 't',
       description: 'Service Type (ClusterIP|NodePort|LoadBalancer)',
@@ -85,31 +65,16 @@ export default class Init extends Command {
 
   async run() {
     const { flags } = this.parse(Init);
-    const context = await tryValidateCommonFlags({
-      organization: {
-        name: flags.organization,
-        required: true
-      },
-      project: {
-        name: flags.project,
-        required: true
-      }
-      ,
-      environment: {
-        name: flags.environment,
-        required: true
-      }
-    });
-    const ctx = context as Required<typeof context>;
-    const { orgId, projectId, envId } = ctx;
     cli.action.start('Configuring environment for app');
     if (!flags.appType.match(/^(ClusterIP|NodePort|LoadBalancer)$/)) {
       throw new Error('Wrong app type, it must be ClusterIP,NodePort or LoadBalancer');
     }
-    let appName: string | undefined = flags.appName;
-    if (!flags.appName) {
-      appName = getDefaultAppName();
-    }
+    const projectId = getDefaultProjectIdFile();
+    const orgId = getDefaultOrganizationIdFile();
+    const appName = getDefaultAppName();
+    const context = await ValidateEnvironment(orgId, projectId, flags.environment);
+    const ctx = context as Required<typeof context>;
+    const { envId } = ctx;
     const app = await getApp({ projectId: projectId, orgId: orgId, name: appName! });
     if (!app) {
       throw new Error('App not found');

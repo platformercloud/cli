@@ -5,7 +5,7 @@ import { getDefaultOrganization, getDefaultProject } from '../../modules/config/
 import { tryValidateCommonFlags } from '../../modules/util/validations';
 import { AppCreate, createApp } from '../../modules/apps/app';
 import { validateAppName50 } from '../../modules/util/rudder_validations';
-import { createFolder, writeFile } from '../../modules/files/files';
+import { createFolder, writeFile } from '../../modules/apps/files';
 
 export default class Init extends Command {
   static description =
@@ -67,8 +67,8 @@ export default class Init extends Command {
       type: flags.appType
     };
     await createApp(data);
-    createFolder('./.app.platformer');
-    writeFile('./.app.platformer/config.json', data);
+    createFolder();
+    writeFile(data);
     cli.action.stop('\nApp Created successfully');
   }
 }

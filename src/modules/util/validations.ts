@@ -30,16 +30,16 @@ export async function tryValidateCommonFlags(flags: {
     throw new ValidationError('Organization not set', {
       suggestions: [
         'Pass the organization name with the --organization flag',
-        'Set the default organization with $ platformer select:org or select:organization',
-      ],
+        'Set the default organization with $ platformer select:org or select:organization'
+      ]
     });
   }
   if (project?.required && !(project?.name && organization.name)) {
     throw new ValidationError('Project not set', {
       suggestions: [
         'Pass the project name with the --project flag',
-        'Set the default project with $ platformer select:proj or select:project',
-      ],
+        'Set the default project with $ platformer select:proj or select:project'
+      ]
     });
   }
   if (
@@ -49,8 +49,8 @@ export async function tryValidateCommonFlags(flags: {
     throw new ValidationError('Environment not set', {
       suggestions: [
         'Pass the environment name with the --environment flag',
-        'Set the default environment with $ platformer select:env or select:environment',
-      ],
+        'Set the default environment with $ platformer select:env or select:environment'
+      ]
     });
   }
 
@@ -82,6 +82,17 @@ export async function tryValidateCommonFlags(flags: {
   return {
     orgId,
     projectId,
-    envId,
+    envId
   };
+}
+
+export async function ValidateEnvironment(organizationId: string, projectId: string, environmentName: string) {
+  let envId;
+  envId = (await getEnvironmentIdByName(organizationId, projectId, environmentName))
+    ?.ID;
+  if (!envId) {
+    throw new ValidationError(`Invalid Environment [${environmentName}]`);
+  }
+
+  return { envId };
 }
