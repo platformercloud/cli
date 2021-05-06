@@ -69,22 +69,22 @@ export default class Init extends Command {
     if (!flags.appType.match(/^(ClusterIP|NodePort|LoadBalancer)$/)) {
       throw new Error('Wrong app type, it must be ClusterIP,NodePort or LoadBalancer');
     }
-    const { name, orgId, projectId } = getFromFile();
-    const context = await ValidateEnvironment(orgId, projectId, flags.environment);
+    const fileData = getFromFile();
+    const context = await ValidateEnvironment(fileData.orgId, fileData.projectId, flags.environment);
     const ctx = context as Required<typeof context>;
     const { envId } = ctx;
-    const app = await getApp({ projectId: projectId, orgId: orgId, name: name });
+    const app = await getApp({ projectId: fileData.projectId, orgId: fileData.orgId, name: fileData.name });
     if (!app) {
       throw new Error('App not found');
     }
     if (app.app_environments?.some(a => a.environment_id === envId)) {
       throw new ValidationError('App environment already initialized');
     }
-    await ensureTargetNamespace({ orgId, projectId, envId, name: flags.namespace });
+    await ensureTargetNamespace({ orgId: fileData.orgId, projectId: fileData.projectId, envId, name: flags.namespace });
     const data: SetAppEnv = {
       ID: app.ID,
-      orgId: orgId,
-      projectId: projectId,
+      orgId: fileData.orgId,
+      projectId: fileData.projectId,
       envId: envId,
       auto_deploy: flags.deploy,
       service_account_name: flags.service,

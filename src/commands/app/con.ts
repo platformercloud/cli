@@ -59,11 +59,11 @@ export default class Con extends Command {
   async run() {
     const { flags } = this.parse(Con);
     cli.action.start('Creating container for app');
-    const { name, orgId, projectId } = getFromFile();
-    const context = await ValidateEnvironment(orgId, projectId, flags.environment);
+    const fileData = getFromFile();
+    const context = await ValidateEnvironment(fileData.orgId, fileData.projectId, flags.environment);
     const ctx = context as Required<typeof context>;
     const { envId } = ctx;
-    const app = await getApp({ projectId: projectId, orgId: orgId, name: name });
+    const app = await getApp({ projectId: fileData.projectId, orgId: fileData.orgId, name: fileData.name });
     if (!app) {
       throw new Error('App not found');
     }
@@ -91,8 +91,8 @@ export default class Con extends Command {
     const data: AppCreateContainer = {
       ID: app.ID,
       name: flags.containerName,
-      orgId: orgId,
-      projectId: projectId,
+      orgId: fileData.orgId,
+      projectId: fileData.projectId,
       appEnvId: appEnvId,
       type: flags.appType.toUpperCase(),
       cpu: flags.cpu,
