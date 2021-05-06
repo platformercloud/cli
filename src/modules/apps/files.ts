@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { AppCreate } from './app';
 
 const appFolder = './.app.platformer';
 const appFile = './.app.platformer/config.json';
@@ -12,9 +13,8 @@ export function createFolder() {
   }
 }
 
-export function readFile() {
+export function readFile(): AppCreate {
   let data: string;
-  let json: any;
   try {
     if (!fs.existsSync(appFile)) {
       throw new Error(appFile + ' not found, please init app first.');
@@ -24,11 +24,10 @@ export function readFile() {
     throw e;
   }
   try {
-    json = JSON.parse(data);
+    return JSON.parse(data);
   } catch (e) {
     throw new Error('Failed to parse json');
   }
-  return json;
 }
 
 export function writeFile(content: any) {
@@ -39,14 +38,11 @@ export function writeFile(content: any) {
   }
 }
 
-export function getDefaultAppName(): string {
-  return readFile().name;
-}
-
-export function getDefaultOrganizationIdFile(): string {
-  return readFile().orgId;
-}
-
-export function getDefaultProjectIdFile(): string {
-  return readFile().projectId;
+export function getFromFile(): AppCreate {
+  return {
+    name: readFile().name,
+    orgId: readFile().orgId,
+    projectId: readFile().projectId,
+    type: readFile().type
+  };
 }

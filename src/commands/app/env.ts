@@ -6,7 +6,7 @@ import { ValidateEnvironment } from '../../modules/util/validations';
 import { getApp, setAppEnv, SetAppEnv } from '../../modules/apps/app';
 import { ensureTargetNamespace } from '../../modules/apps/environment';
 import ValidationError from '../../modules/errors/validation-error';
-import { getDefaultAppName, getDefaultOrganizationIdFile, getDefaultProjectIdFile } from '../../modules/apps/files';
+import { getFromFile } from '../../modules/apps/files';
 
 export default class Init extends Command {
   static description =
@@ -69,13 +69,11 @@ export default class Init extends Command {
     if (!flags.appType.match(/^(ClusterIP|NodePort|LoadBalancer)$/)) {
       throw new Error('Wrong app type, it must be ClusterIP,NodePort or LoadBalancer');
     }
-    const projectId = getDefaultProjectIdFile();
-    const orgId = getDefaultOrganizationIdFile();
-    const appName = getDefaultAppName();
+    const { name, orgId, projectId } = getFromFile();
     const context = await ValidateEnvironment(orgId, projectId, flags.environment);
     const ctx = context as Required<typeof context>;
     const { envId } = ctx;
-    const app = await getApp({ projectId: projectId, orgId: orgId, name: appName! });
+    const app = await getApp({ projectId: projectId, orgId: orgId, name: name });
     if (!app) {
       throw new Error('App not found');
     }
@@ -93,7 +91,7 @@ export default class Init extends Command {
       graceful_termination_seconds: flags.graceful,
       replicas: flags.replicas,
       namespace: flags.namespace,
-      name: appName!,
+      name: name,
       type: flags.appType
     };
     await setAppEnv(data);

@@ -5,7 +5,7 @@ import { getDefaultEnvironment } from '../../modules/config/helpers';
 import { ValidateEnvironment } from '../../modules/util/validations';
 import { AppCreateContainer, AppPort, createAppContainer, getApp, getAppEnvId } from '../../modules/apps/app';
 import { validateContainerName } from '../../modules/util/rudder_validations';
-import { getDefaultAppName, getDefaultOrganizationIdFile, getDefaultProjectIdFile } from '../../modules/apps/files';
+import { getFromFile } from '../../modules/apps/files';
 
 export default class Con extends Command {
   static description =
@@ -59,13 +59,11 @@ export default class Con extends Command {
   async run() {
     const { flags } = this.parse(Con);
     cli.action.start('Creating container for app');
-    const projectId = getDefaultProjectIdFile();
-    const orgId = getDefaultOrganizationIdFile();
-    const appName = getDefaultAppName();
+    const { name, orgId, projectId } = getFromFile();
     const context = await ValidateEnvironment(orgId, projectId, flags.environment);
     const ctx = context as Required<typeof context>;
     const { envId } = ctx;
-    const app = await getApp({ projectId: projectId, orgId: orgId, name: appName! });
+    const app = await getApp({ projectId: projectId, orgId: orgId, name: name });
     if (!app) {
       throw new Error('App not found');
     }
