@@ -5,7 +5,7 @@ import { getDefaultEnvironment } from '../../modules/config/helpers';
 import { ValidateEnvironment } from '../../modules/util/validations';
 import { AppCreateContainer, AppPort, createAppContainer, getApp, getAppEnvId } from '../../modules/apps/app';
 import { validateContainerName } from '../../modules/util/rudder_validations';
-import { getFromFile } from '../../modules/apps/files';
+import { readFile } from '../../modules/apps/files';
 
 export default class Con extends Command {
   static description =
@@ -59,7 +59,7 @@ export default class Con extends Command {
   async run() {
     const { flags } = this.parse(Con);
     cli.action.start('Creating container for app');
-    const fileData = getFromFile();
+    const fileData = readFile();
     const context = await ValidateEnvironment(fileData.orgId, fileData.projectId, flags.environment);
     const ctx = context as Required<typeof context>;
     const { envId } = ctx;

@@ -6,7 +6,7 @@ import { ValidateEnvironment } from '../../modules/util/validations';
 import { getApp, setAppEnv, SetAppEnv } from '../../modules/apps/app';
 import { ensureTargetNamespace } from '../../modules/apps/environment';
 import ValidationError from '../../modules/errors/validation-error';
-import { getFromFile } from '../../modules/apps/files';
+import { readFile } from '../../modules/apps/files';
 
 export default class Init extends Command {
   static description =
@@ -69,7 +69,7 @@ export default class Init extends Command {
     if (!flags.appType.match(/^(ClusterIP|NodePort|LoadBalancer)$/)) {
       throw new Error('Wrong app type, it must be ClusterIP,NodePort or LoadBalancer');
     }
-    const fileData = getFromFile();
+    const fileData = readFile();
     const context = await ValidateEnvironment(fileData.orgId, fileData.projectId, flags.environment);
     const ctx = context as Required<typeof context>;
     const { envId } = ctx;

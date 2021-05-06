@@ -37,12 +37,3 @@ export function writeFile(content: any) {
     throw e;
   }
 }
-
-export function getFromFile(): AppCreate {
-  return {
-    name: readFile().name,
-    orgId: readFile().orgId,
-    projectId: readFile().projectId,
-    type: readFile().type
-  };
-}
