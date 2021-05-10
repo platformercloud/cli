@@ -87,8 +87,7 @@ export async function tryValidateCommonFlags(flags: {
 }
 
 export async function ValidateEnvironment(organizationId: string, projectId: string, environmentName: string) {
-  let envId;
-  envId = (await getEnvironmentIdByName(organizationId, projectId, environmentName))
+  const envId = (await getEnvironmentIdByName(organizationId, projectId, environmentName))
     ?.ID;
   if (!envId) {
     throw new ValidationError(`Invalid Environment [${environmentName}]`);

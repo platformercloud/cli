@@ -30,7 +30,7 @@ export function readFile(): AppCreate {
   }
 }
 
-export function writeFile(content: any) {
+export function writeFile(content: AppCreate) {
   try {
     return fs.writeFileSync(appFile, JSON.stringify(content, null, 2), 'utf-8');
   } catch (e) {

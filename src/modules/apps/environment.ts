@@ -2,6 +2,7 @@ import { getAPIGateway, getAuthToken } from '../config/helpers';
 import APIError from '../errors/api-error';
 import endpoints from '../util/api-endpoints';
 import { fetch } from '../util/fetch';
+import ValidationError from '../errors/validation-error';
 
 export interface Environment {
   ID: string;
@@ -40,6 +41,7 @@ export interface EnvironmentDetails
   environment_clusters: EnvironmentCluster[];
   namespaces: Array<EnvNamespace>;
 }
+
 export async function fetchEnvironments(
   orgId: string,
   projectId: string
@@ -52,8 +54,8 @@ export async function fetchEnvironments(
       'Content-Type': 'application/json',
       'x-organization-id': orgId,
       'x-project-id': projectId,
-      Authorization: getAuthToken(),
-    },
+      Authorization: getAuthToken()
+    }
   });
   if (!response.ok) {
     throw new APIError('Failed to fetch environment list', response);
@@ -71,10 +73,10 @@ export async function getEnvironmentIdByName(
 }
 
 export async function fetchEnvironmentDetails({
-  orgId,
-  projectId,
-  envId,
-}: {
+                                                orgId,
+                                                projectId,
+                                                envId
+                                              }: {
   orgId: string;
   projectId: string;
   envId: string;
@@ -90,8 +92,8 @@ export async function fetchEnvironmentDetails({
       'x-organization-id': orgId,
       'x-project-id': projectId,
       'x-env-id': envId,
-      Authorization: getAuthToken(),
-    },
+      Authorization: getAuthToken()
+    }
   });
   if (!response.ok) {
     throw new APIError('Failed to fetch environment', response);
@@ -105,6 +107,7 @@ interface NamespaceCreate {
   projectId: string;
   envId: string;
 }
+
 export async function createNamespace(data: NamespaceCreate) {
   const { orgId, projectId, envId, name } = data;
   const url = `${getAPIGateway()}/${
@@ -115,7 +118,7 @@ export async function createNamespace(data: NamespaceCreate) {
     organization_id: orgId,
     project_id: projectId,
     environment_id: envId,
-    metdata: {},
+    metdata: {}
   };
   const response = await fetch(url, {
     method: 'POST',
@@ -123,9 +126,9 @@ export async function createNamespace(data: NamespaceCreate) {
       'Content-Type': 'application/json',
       'x-organization-id': orgId,
       'x-project-id': projectId,
-      Authorization: getAuthToken(),
+      Authorization: getAuthToken()
     },
-    body: JSON.stringify(reqBody),
+    body: JSON.stringify(reqBody)
   });
   if (response.ok) {
     return;
@@ -141,5 +144,5 @@ export async function ensureTargetNamespace(data: NamespaceCreate) {
   const { orgId, projectId, envId, name } = data;
   const env = await fetchEnvironmentDetails({ orgId, projectId, envId });
   if (env.namespaces.some((ns) => ns.name === name)) return;
-  await createNamespace(data);
+  throw new ValidationError('Namespace not found');
 }
