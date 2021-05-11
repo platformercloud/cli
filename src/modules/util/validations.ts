@@ -85,3 +85,18 @@ export async function tryValidateCommonFlags(flags: {
     envId,
   };
 }
+
+export async function ValidateEnvironment(
+  organizationId: string,
+  projectId: string,
+  environmentName: string
+) {
+  const envId = (
+    await getEnvironmentIdByName(organizationId, projectId, environmentName)
+  )?.ID;
+  if (!envId) {
+    throw new ValidationError(`Invalid Environment [${environmentName}]`);
+  }
+
+  return { envId };
+}

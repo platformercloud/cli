@@ -2,6 +2,7 @@ import { getAPIGateway, getAuthToken } from '../config/helpers';
 import APIError from '../errors/api-error';
 import endpoints from '../util/api-endpoints';
 import { fetch } from '../util/fetch';
+import ValidationError from '../errors/validation-error';
 
 export interface Environment {
   ID: string;
@@ -40,6 +41,7 @@ export interface EnvironmentDetails
   environment_clusters: EnvironmentCluster[];
   namespaces: Array<EnvNamespace>;
 }
+
 export async function fetchEnvironments(
   orgId: string,
   projectId: string
@@ -105,6 +107,7 @@ interface NamespaceCreate {
   projectId: string;
   envId: string;
 }
+
 export async function createNamespace(data: NamespaceCreate) {
   const { orgId, projectId, envId, name } = data;
   const url = `${getAPIGateway()}/${
@@ -142,4 +145,11 @@ export async function ensureTargetNamespace(data: NamespaceCreate) {
   const env = await fetchEnvironmentDetails({ orgId, projectId, envId });
   if (env.namespaces.some((ns) => ns.name === name)) return;
   await createNamespace(data);
+}
+
+export async function validateNamespace(data: NamespaceCreate) {
+  const { orgId, projectId, envId, name } = data;
+  const env = await fetchEnvironmentDetails({ orgId, projectId, envId });
+  if (env.namespaces.some((ns) => ns.name === name)) return;
+  throw new ValidationError('Namespace not found');
 }
