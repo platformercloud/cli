@@ -4,7 +4,7 @@ import Command from '../../base-command';
 import { getDefaultEnvironment } from '../../modules/config/helpers';
 import { ValidateEnvironment } from '../../modules/util/validations';
 import { getApp, setAppEnv, SetAppEnv } from '../../modules/apps/app';
-import { ValidateNamespace } from '../../modules/apps/environment';
+import { validateNamespace } from '../../modules/apps/environment';
 import ValidationError from '../../modules/errors/validation-error';
 import { readFile } from '../../modules/apps/files';
 
@@ -89,7 +89,7 @@ export default class Init extends Command {
     if (app.app_environments?.some((a) => a.environment_id === envId)) {
       throw new ValidationError('App environment already initialized');
     }
-    await ValidateNamespace({
+    await validateNamespace({
       orgId: fileData.orgId,
       projectId: fileData.projectId,
       envId,

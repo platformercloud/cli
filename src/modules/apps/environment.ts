@@ -147,11 +147,7 @@ export async function ensureTargetNamespace(data: NamespaceCreate) {
   await createNamespace(data);
 }
 
-/**
- * Create if the namespace doesn't exist on rudder
- * @param data
- */
-export async function ValidateNamespace(data: NamespaceCreate) {
+export async function validateNamespace(data: NamespaceCreate) {
   const { orgId, projectId, envId, name } = data;
   const env = await fetchEnvironmentDetails({ orgId, projectId, envId });
   if (env.namespaces.some((ns) => ns.name === name)) return;
