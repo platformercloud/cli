@@ -94,7 +94,8 @@ export async function writeManifestResult(
       } catch (error) {}
     }
   }
-  const fileName = `${manifest.kind}-${manifest.metadata.name}.yaml`.toLowerCase();
+  const fileName =
+    `${manifest.kind}-${manifest.metadata.name}.yaml`.toLowerCase();
   const filePath = path.join(outputPath, fileName);
   const str = JSON.stringify(data, null, 2);
   await fs.promises.writeFile(resolvePath(filePath), str);

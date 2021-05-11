@@ -44,6 +44,7 @@
     "globby": "^10",
     "mocha": "^5",
     "nyc": "^14",
+    "prettier": "2.3.0",
     "rimraf": "^3.0.2",
     "ts-node": "^8",
     "typescript": "^3.3"
@@ -98,6 +99,7 @@
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "prettier-format": "prettier \"{src,public,docs}/**/*.{js,ts,tsx,json}\" --config .prettierrc --write",
     "watch": "tsc -w",
     "preversion": "oclif-dev readme && git add README.md"
   },
