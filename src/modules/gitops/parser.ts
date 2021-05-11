@@ -44,13 +44,11 @@ export async function parseK8sManifestsFromFile(
     ? YAML.safeLoadAll(rawData)
     : JSON.parse(rawData);
 
-
   if (!Array.isArray(parsed)) {
     parsed = [parsed];
   }
 
-  parsed = parsed.filter((o) => !!o)
-
+  parsed = parsed.filter((o) => !!o);
 
   for (let i = 0; i < parsed.length; i++) {
     if (isValidK8sObject(parsed[i]) === false) {
@@ -59,7 +57,6 @@ export async function parseK8sManifestsFromFile(
       );
     }
   }
-
 
   return parsed as K8sObject[];
 }

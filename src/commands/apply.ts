@@ -77,7 +77,7 @@ export default class Apply extends Command {
       required: false,
       multiple: false,
     }),
-    'filepath': flags.string({
+    filepath: flags.string({
       char: 'f',
       description: 'Path to YAML file',
       required: true,
@@ -109,9 +109,8 @@ export default class Apply extends Command {
       cli.log(`Target namespace [${targetNS}]`);
       await ensureTargetNamespace({ orgId, projectId, envId, name: targetNS });
     }
-    const { priorities, priorityMap, importTypeMap } = getKindToPriorityMap(
-      importTypes
-    );
+    const { priorities, priorityMap, importTypeMap } =
+      getKindToPriorityMap(importTypes);
 
     const { files, isDir } = await validateManifestPath(fileFolderPath);
     if (flags.save) {
