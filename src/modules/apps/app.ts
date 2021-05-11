@@ -15,15 +15,13 @@ export interface AppCreate {
 
 export async function createApp(data: AppCreate) {
   const { orgId, projectId, name, type } = data;
-  const url = `${getAPIGateway()}/${
-    endpoints.RUDDER_APP
-  }`;
+  const url = `${getAPIGateway()}/${endpoints.RUDDER_APP}`;
   const reqBody = {
     organization_id: orgId,
     project_id: projectId,
     name: name,
     metadata: {},
-    type: type
+    type: type,
   };
   const response = await fetch(url, {
     method: 'POST',
@@ -31,9 +29,9 @@ export async function createApp(data: AppCreate) {
       'Content-Type': 'application/json',
       'x-organization-id': orgId,
       'x-project-id': projectId,
-      Authorization: getAuthToken()
+      Authorization: getAuthToken(),
     },
-    body: JSON.stringify(reqBody)
+    body: JSON.stringify(reqBody),
   });
   if (response.ok) {
     return;
@@ -41,12 +39,11 @@ export async function createApp(data: AppCreate) {
   throw new APIError('Failed to create app', response);
 }
 
-export async function getApps(projectId: ProjectId, orgId: OrgId): Promise<Application[]> {
-  const url = new URL(
-    `${getAPIGateway()}/${
-      endpoints.RUDDER_APP
-    }`
-  );
+export async function getApps(
+  projectId: ProjectId,
+  orgId: OrgId
+): Promise<Application[]> {
+  const url = new URL(`${getAPIGateway()}/${endpoints.RUDDER_APP}`);
   url.searchParams.append('project_id', projectId);
 
   const response = await fetch(url.href, {
@@ -54,8 +51,8 @@ export async function getApps(projectId: ProjectId, orgId: OrgId): Promise<Appli
       'Content-Type': 'application/json',
       'x-organization-id': orgId,
       'x-project-id': projectId,
-      Authorization: getAuthToken()
-    }
+      Authorization: getAuthToken(),
+    },
   });
   if (!response.ok) {
     throw new APIError('Failed to get app list', response);
@@ -72,16 +69,15 @@ interface GetApp {
 export async function getApp(data: GetApp): Promise<Application | null> {
   const { orgId, projectId, name } = data;
   const appList = await getApps(projectId, orgId);
-  return appList.find(a =>
-    a.name === name
-  ) ?? null;
+  return appList.find((a) => a.name === name) ?? null;
 }
 
-export async function getAppEnvId(app: Application, envId: string): Promise<string | undefined> {
+export async function getAppEnvId(
+  app: Application,
+  envId: string
+): Promise<string | undefined> {
   const appEnv = app.app_environments;
-  const e = appEnv?.find(a =>
-    a.environment_id === envId
-  );
+  const e = appEnv?.find((a) => a.environment_id === envId);
   return e?.ID;
 }
 
@@ -111,11 +107,9 @@ export async function setAppEnv(data: SetAppEnv) {
     replicas,
     namespace,
     name,
-    type
+    type,
   } = data;
-  const url = `${getAPIGateway()}/${
-    endpoints.RUDDER_APP
-  }/${ID}/environment`;
+  const url = `${getAPIGateway()}/${endpoints.RUDDER_APP}/${ID}/environment`;
   const reqBody = {
     auto_deploy: auto_deploy,
     environment_id: envId,
@@ -128,7 +122,7 @@ export async function setAppEnv(data: SetAppEnv) {
     namespace: namespace,
     kubernetes_name: name,
     cronjob_frequency: '',
-    service_type: type
+    service_type: type,
   };
   const response = await fetch(url, {
     method: 'POST',
@@ -136,9 +130,9 @@ export async function setAppEnv(data: SetAppEnv) {
       'Content-Type': 'application/json',
       'x-organization-id': orgId,
       'x-project-id': projectId,
-      Authorization: getAuthToken()
+      Authorization: getAuthToken(),
     },
-    body: JSON.stringify(reqBody)
+    body: JSON.stringify(reqBody),
   });
   if (response.ok) {
     return;
@@ -165,17 +159,8 @@ export interface AppCreateContainer {
 }
 
 export async function createAppContainer(data: AppCreateContainer) {
-  const {
-    ID,
-    orgId,
-    projectId,
-    appEnvId,
-    name,
-    type,
-    cpu,
-    memory,
-    port
-  } = data;
+  const { ID, orgId, projectId, appEnvId, name, type, cpu, memory, port } =
+    data;
   const url = `${getAPIGateway()}/${
     endpoints.RUDDER_APP
   }/${ID}/environment/${appEnvId}/container`;
@@ -195,7 +180,7 @@ export async function createAppContainer(data: AppCreateContainer) {
     limit_disabled: true,
     args: [],
     command: [],
-    image_pull_policy: 'Always'
+    image_pull_policy: 'Always',
   };
   let response: Response;
   try {
@@ -205,9 +190,9 @@ export async function createAppContainer(data: AppCreateContainer) {
         'Content-Type': 'application/json',
         'x-organization-id': orgId,
         'x-project-id': projectId,
-        Authorization: getAuthToken()
+        Authorization: getAuthToken(),
       },
-      body: JSON.stringify(reqBody)
+      body: JSON.stringify(reqBody),
     });
     if (response.ok) {
       return;

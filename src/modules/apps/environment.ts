@@ -54,8 +54,8 @@ export async function fetchEnvironments(
       'Content-Type': 'application/json',
       'x-organization-id': orgId,
       'x-project-id': projectId,
-      Authorization: getAuthToken()
-    }
+      Authorization: getAuthToken(),
+    },
   });
   if (!response.ok) {
     throw new APIError('Failed to fetch environment list', response);
@@ -73,10 +73,10 @@ export async function getEnvironmentIdByName(
 }
 
 export async function fetchEnvironmentDetails({
-                                                orgId,
-                                                projectId,
-                                                envId
-                                              }: {
+  orgId,
+  projectId,
+  envId,
+}: {
   orgId: string;
   projectId: string;
   envId: string;
@@ -92,8 +92,8 @@ export async function fetchEnvironmentDetails({
       'x-organization-id': orgId,
       'x-project-id': projectId,
       'x-env-id': envId,
-      Authorization: getAuthToken()
-    }
+      Authorization: getAuthToken(),
+    },
   });
   if (!response.ok) {
     throw new APIError('Failed to fetch environment', response);
@@ -118,7 +118,7 @@ export async function createNamespace(data: NamespaceCreate) {
     organization_id: orgId,
     project_id: projectId,
     environment_id: envId,
-    metdata: {}
+    metdata: {},
   };
   const response = await fetch(url, {
     method: 'POST',
@@ -126,9 +126,9 @@ export async function createNamespace(data: NamespaceCreate) {
       'Content-Type': 'application/json',
       'x-organization-id': orgId,
       'x-project-id': projectId,
-      Authorization: getAuthToken()
+      Authorization: getAuthToken(),
     },
-    body: JSON.stringify(reqBody)
+    body: JSON.stringify(reqBody),
   });
   if (response.ok) {
     return;
